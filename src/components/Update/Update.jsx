@@ -8,7 +8,7 @@ import axios from 'axios';
 
 
 function Update() {
-  //brand - product  - order - subcategory - category - title - customers
+  //brand - product  - order - subcategory - category - title - customer
 
   let { type } = useParams()
   let { id } = useParams()
@@ -18,10 +18,15 @@ function Update() {
   }
 
   const [ids, setIds] = useState(["categoryId", "subcategoryId", "titleId", "brandId"])
-  const [display, setDisplay] = useState(["categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "isDeleted", "createdAt", "updatedAt", "__v", "updatedBy"])
+  const [idsData, setIdsData] = useState({})
+
+
+  const [display, setDisplay] = useState(["Subcategory","categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "isDeleted", "createdAt", "updatedAt", "__v", "updatedBy"])
+
   const [result, setResult] = useState([]);
   const [NewData, setNewData] = useState({});
   const [values, setValues] = useState({});
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -38,7 +43,7 @@ function Update() {
     try {
       let api = `http://127.0.0.1:5000/${type}?_id=${id}`
       const { message, ...resultData } = (await axios.get(api)).data;
-
+console.log(resultData);
       let data = Object.values(resultData)
       if (data) {
         let res = data[0][0]
@@ -76,7 +81,7 @@ function Update() {
   async function update() {
 
     try {
-      /* await handleValues() */
+      /* await handleValues()*/
       /* result = NewData */
       console.log(NewData);
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
@@ -96,9 +101,11 @@ function Update() {
 
       if (ids.includes(key)) {
         console.log(key.split("I")[0]);
-        acc[key] = res[key];
+        console.log(`${key} = ${res[key]}`);
+        acc[key.split("I")[0]] = res[key];
       }
-
+      setIdsData(acc)
+      console.log(acc);
       return acc;
     }, {});
     console.log(filteredObj);
