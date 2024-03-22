@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function Products({ userDate }) {
+function Products({ userData }) {
   let { subcategoryId } = useParams()
   let { productId } = useParams()
   let navigate = useNavigate()
@@ -110,7 +110,7 @@ function Products({ userDate }) {
 
             {product.description ? <><span>description :</span> <span>{product?.description}</span></> : ""}
             
-            {userDate && userDate.role === "Admin" && (
+            {userData && userData.role === "Admin" && (
               <div className=''>
                 <span>realPrice :</span> <span className='realPrice text-danger'>{product?.realPrice}</span>
                 <br />
@@ -121,7 +121,7 @@ function Products({ userDate }) {
             <br />
             <br />
 
-            {userDate && userDate.role === "Admin" && (
+            {userData && userData.role === "Admin" && (
               <div className=''>
                 <button className=' btn btn-primary me-2' onClick={()=>{navigate("../update")}}> Edit</button>
                 {/* <button className=' btn btn-success me-2'> create</button> */}

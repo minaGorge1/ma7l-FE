@@ -5,9 +5,9 @@ import Navbar from '../Navbar/Navbar.jsx';
 import { Outlet } from 'react-router-dom';
 import './Layout.css';
 
-const Layout = ({ userDate, logout }) => (
+const Layout = ({ userData, logout }) => (
   <>
-    <Navbar userDate={userDate} logout={logout} />
+    <Navbar userData={userData} logout={logout} />
     <div className='container'>
       <Outlet></Outlet>
     </div>

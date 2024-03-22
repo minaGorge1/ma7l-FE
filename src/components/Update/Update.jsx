@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 
-function Update() {
+function Update({ userData }) {
   //brand - product  - order - subcategory - category - title - customer
 
   let { type } = useParams()
@@ -88,7 +88,6 @@ function Update() {
   async function update() {
 
     try {
-      console.log(NewData);
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
       const { data } = await axios.post(api, NewData, { headers })
 
@@ -136,7 +135,7 @@ function Update() {
           return prevState;
         }
       });
-      console.log(allIds);
+
 
       //owned
       setOwnedIds((prevState) => {
@@ -146,6 +145,7 @@ function Update() {
           return prevState;
         }
       });
+
       /* This code checks if an object with the key key already exists in
        the ownedIds array and if its _id matches the _id of dataOwned[key][0].
        If such an object does not exist, it adds a new object to the ownedIds array 
@@ -187,17 +187,30 @@ function Update() {
         {values ? Object.keys(values)?.map(key => (
 
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
-            <span className='col-5'> Key: {key}, Value: {values[key]} </span>
-            <span className='col-2'>New {key} :</span>
 
-            <input className=' col-3 ' onChange={(el) => {
-              setNewData((prevData) => ({
-                ...prevData,
-                [key]: el.target?.value
-              }));
-            }}
-              type="text" name={key} id={key} />
-            <button className='btn col-1 btn-primary' onClick={update}> update</button>
+            {!(userData.role === "Admin") ? <>
+              <span className='col-2 fs-4'>  {key} : </span>
+              <span className='col-10 fs-4'> {values[key]}</span>
+            </> : ""}
+
+
+
+            {userData.role === "Admin" ? <>
+              <span className='col-5'> Key: {key},&nbsp; Value:  {values[key]} </span>
+              <span className='col-2'>New {key} :</span>
+
+              <input className=' col-3 ' onChange={(el) => {
+                setNewData((prevData) => ({
+                  ...prevData,
+                  [key]: el.target?.value
+                }));
+              }}
+                type="text" name={key} id={key} />
+
+
+              <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
+            }
+
           </div>
 
 
@@ -206,18 +219,28 @@ function Update() {
 
         {result.details ? Object.keys(result.details)?.map(key => (
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
-            <span className='col-5'> Key: {key}, Value: {result.details[key]} </span>
-            <span className='col-2'>New {key} :</span>
 
-            <input className=' col-3 ' onChange={(el) => {
-              setNewData((prevData) => ({
-                ...prevData,
-                details: { [key]: el.target?.value }
+            {!(userData.role === "Admin") ? <>
+              <span className='col-2 fs-4'> {key} : </span>
+              <span className='col-10 fs-4'> {values[key]}</span>
+            </> : ""}
 
-              }));
-            }}
-              type="text" name={key} id={key} />
-            <button className='btn col-1 btn-primary' onClick={update}> update</button>
+            {userData.role === "Admin" ? <>
+              <span className='col-5'> Key: {key},&nbsp; Value: {result.details[key]} </span>
+              <span className='col-2'>New {key} :</span>
+
+              <input className=' col-3 ' onChange={(el) => {
+                setNewData((prevData) => ({
+                  ...prevData,
+                  details: { [key]: el.target?.value }
+
+                }));
+              }}
+                type="text" name={key} id={key} />
+
+
+              <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
+            }
           </div>
 
 
@@ -225,42 +248,54 @@ function Update() {
 
         {ownedIds ? Object.keys(ownedIds)?.map(key => (
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
-            <span className='col-5'> Key: {key} ,&nbsp; Name: {ownedIds[key]?.name}</span>
-            <span className='col-2'>New {key} :</span>
 
-            <div className=" dropdown col-2">
-              <div className="nav-item dropdown btn btn-outline-primary">
-                <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  {Object.keys(selectedItem)?.some((k) => k === key) ? selectedItem[key] : 'Select an item'}
-                </Link>
-                <ul className="dropdown-menu">
+            {!(userData.role === "Admin") ? <>
+              <span className='col-3 fs-4'>  {key} : </span>
+              <span className='col-9 fs-4'>{ownedIds[key]?.name}</span>
+            </> : ""}
 
-                  {allIds[key].map((item, i) => (
-                    <button key={i}
+            {userData.role === "Admin" ? <>
+              <span className='col-5'> Key: {key} ,&nbsp; Name: {ownedIds[key]?.name}</span>
+              <span className='col-2'>New {key} :</span>
 
-                      onClick={(e) => {
-                        setNewData((prevData) => ({
-                          ...prevData,
-                          [`${key}Id`]: item._id
+              <div className=" dropdown col-2">
+                <div className="nav-item dropdown btn btn-outline-primary">
+                  <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {Object.keys(selectedItem)?.some((k) => k === key) ? selectedItem[key] : 'Select an item'}
+                  </Link>
+                  <ul className="dropdown-menu">
 
-                        }));
-                        setSelectedItem({ [key]: item.name });  // Update the selected item
-                      }}
+                    {allIds[key].map((item, i) => (
+                      <button key={i}
 
-                      className="dropdown-item w-75 d-block text-start mx-3">
-                      {item.name}
-                    </button>
-                  ))}
-                </ul>
+                        onClick={(e) => {
+                          setNewData((prevData) => ({
+                            ...prevData,
+                            [`${key}Id`]: item._id
+
+                          }));
+                          setSelectedItem({ [key]: item.name });  // Update the selected item
+                        }}
+
+                        className="dropdown-item w-75 d-block text-start mx-3">
+                        {item.name}
+                      </button>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
 
-            <button className='btn col-1 btn-primary' onClick={update}> update</button>
+
+              <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
+
+            }
           </div>
 
         )) : ""}
 
-        <button className=' ms-2 col-2 btn btn-danger' onClick={() => { deleteData(type, id) }}> delete</button>
+        {userData && userData.role === "Admin" && (
+          <button className=' ms-2 col-2 btn btn-danger' onClick={() => { deleteData(type, id) }}> delete</button>
+        )}
 
       </div>
     </div>

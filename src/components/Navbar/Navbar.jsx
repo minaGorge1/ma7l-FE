@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 
 
-export default function Navbar({ userDate, logout }) {
+export default function Navbar({ userData, logout }) {
 
   return <>
     <nav className="navbar mb-4 nav-color navbar-expand-lg bg-black-opacity">
@@ -15,14 +15,14 @@ export default function Navbar({ userDate, logout }) {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          {userDate !== null ?
+          {userData !== null ?
             <>
               <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                 <li className="nav-item">
                   <Link className="nav-link active" aria-current="page" to="home" >Home</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="Update">Update</Link>
+                  {userData.role === "Admin" ? <Link className="nav-link" to="create">create</Link> : null}
                 </li>
                 <li className="nav-item">
                   <Link className="nav-link" to="Search">Search</Link>
@@ -50,7 +50,7 @@ export default function Navbar({ userDate, logout }) {
             : null
           }
 
-          {!userDate ? <>
+          {!userData ? <>
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
                 <Link className="nav-link" to="login">login</Link>

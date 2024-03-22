@@ -8,20 +8,23 @@ import Products from './components/Products/Products.jsx';
 import Register from './components/Register/Register.jsx';
 import NotFound from './components/NotFound/NotFound.jsx';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute.js';
-import CategoryDetils from './components/CategoryDetils/CategoryDetils.jsx'
+import CategoryDetils from './components/CategoryDetils/CategoryDetils.jsx';
+import Update from './components/Update/Update.jsx';
+import Search from './components/Search/Search.jsx';
+import Create from './components/Create/Create.jsx';
+
 import Categories from './components/Categories/Categories.jsx';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { Navigate } from "react-router-dom";
-import Update from './components/Update/Update.jsx';
-import Search from './components/Search/Search.jsx';
+
 
 
 
 
 
 function App() {
-  const [userDate, setUserData] = useState(null);
+  const [userData, setUserData] = useState(null);
 
 
   useEffect(() => {
@@ -45,9 +48,9 @@ function App() {
   //logout
 
   async function logout() {
-    /* if (userDate) {
+    /* if (userData) {
       try {
-        await axios.post('http://localhost:5000/auth//log-out', userDate)
+        await axios.post('http://localhost:5000/auth//log-out', userData)
       } catch (error) {
         console.log(error);
       }
@@ -66,17 +69,20 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<Layout userDate={userDate} logout={logout} />}
+          element={<Layout userData={userData} logout={logout} />}
         >
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route index path="home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
 
           <Route path="categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="categorydetils/:categoryId" element={<ProtectedRoute><CategoryDetils /></ProtectedRoute>} />
-          <Route path="subcategorydetils/:subcategoryId/products/:productId" element={<ProtectedRoute><Products userDate={userDate} /></ProtectedRoute>} />
+          <Route path="subcategorydetils/:subcategoryId/products/:productId" element={<ProtectedRoute><Products userData={userData} /></ProtectedRoute>} />
 
-          <Route path="update/:type/:id" element={<ProtectedRoute><Update /></ProtectedRoute>} />
+
+          <Route path="update/:type/:id" element={<ProtectedRoute><Update userData={userData} /></ProtectedRoute>} />
           <Route path="search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+
+          <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
 
 
           <Route path="login" element={<Login saveUserData={saveUserData} />} />
