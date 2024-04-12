@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import './Create.css';
 import { Link } from 'react-router-dom';
@@ -108,24 +108,32 @@ export const createProduct = joi.object({
 
 function Create() {
 
+  //loading...
   const [loading, setLoading] = useState(false);
+  //error massege
   const [error, setError] = useState(null);
+  //update data for the selected item
+  const [NewData, setNewData] = useState({});
+  //form name
+  const [formName, setFormName] = useState()
 
-
-  const [allIds, setAllIds] = useState({})
-/*   // all ids relationship in result
-  const [idsData, setIdsData] = useState({}) */
   // all ids relationship in result to get it all
- /*  const [ids, setIds] = useState(["categoryId", "subcategoryId", "titleId", "brandId"])
- */
-  const [itemCreate, setItemCreate] = useState(["brand", "product", "subcategory", "category", "title", "customer"])
+  const [ids, setIds] = useState(["categoryId", "subcategoryId", "titleId", "brandId"])
+
+  const [selectedItem, setSelectedItem] = useState({});
+
+
+  console.log(NewData);
+  const [allIds, setAllIds] = useState({})
+
   const [objectForm, setObjectForm] = useState({})
   const [forms, setForms] = useState([
     {
       formName: "brand",
       form: {
         name: ""
-      }
+      },
+      api: "http://127.0.0.1:5000/brand/create/"
     },
     {
       formName: "product",
@@ -140,28 +148,35 @@ function Create() {
         categoryId: "",
         subcategoryId: "",
         brandId: ""
-      }
+      },
+      api: "http://127.0.0.1:5000/product/create"
     },
     {
       formName: "subcategory",
       form: {
+        titleId: "",
+        categoryId: "",
         name: "",
         details: {
           inchPrice: ""
         }
-      }
+      },
+      api: `http://localhost:5000/subcategory/create/c/${NewData.categoryId}`
     },
     {
       formName: "category",
       form: {
-        name: ""
-      }
+        name: "",
+        titleId: ""
+      },
+      api: `http://localhost:5000/category/create/t/${NewData.titleId}`
     },
     {
       formName: "title",
       form: {
         name: ""
-      }
+      },
+      api: "http://127.0.0.1:5000/title/create/"
     },
     {
       formName: "customer",
@@ -172,70 +187,111 @@ function Create() {
         mony: null,
         description: "",
         status: ["صافي", "ليه فلوس", "عليه فلوس"]
-      }
+      },
+      api: "http://127.0.0.1:5000/customer/create/"
     }])
 
 
-  function getForm(item) {
+  const headers = {
+    "authorization": `Min@__${localStorage.getItem("token")}`
+  }
+
+  useEffect(() => {
+    handleIds()
+    getIdsData()
+  }, []);
+
+
+  async function getForm(item) {
     const filteredForms = forms.filter((el) => el.formName === item);
+    setFormName(item)
+    setObjectForm({ name: item, form: filteredForms[0].form })
+    await handleIds()
 
-    console.log(filteredForms[0].form)
-    setObjectForm(filteredForms[0].form)
-    /* handleIds() */
 
+
+    setLoading(false);
   }
 
 
-/*   function handleIds() {
-    let x = Object.keys(objectForm).reduce((acc, key) => {
-
-      if (ids.includes(key)) {
-       console.log(key.split("I")[0]);
-        console.log(`${key} = ${objectForm[key]}`); 
-        acc[key.split("I")[0]] = objectForm[key];
-        getIdsData(key.split("I")[0])
+  async function handleIds() {
+    if (objectForm.form) {
+      for (const key of Object.keys(objectForm.form)) {
+        if (ids.includes(key)) {
+          getIdsData(key.split("I")[0]);
+        }
       }
-      setIdsData(acc)
-      return acc;
-    }, {});
-
-  } */
+    }
+  }
 
 
-  async function getIdsData(key, id) {
+  async function getIdsData(key) {
     try {
+      setLoading(true);
       let apiAll = `http://127.0.0.1:5000/${key}`;
-      let apiOwned = `http://127.0.0.1:5000/${key}?_id=${id}`;
-
-
       const responseAll = await axios.get(apiAll);
-      const responseOwned = await axios.get(apiOwned);
 
       const { message: messageAll, ...dataAll } = responseAll.data;
-      const { message: messageOwned, ...dataOwned } = responseOwned.data;
 
       //all
-      setAllIds(prevState => {
-        if (!prevState[key] || !Array.isArray(prevState[key]) || !prevState[key].some(item => item._id === dataAll[key][0]._id)) {
-          return { ...prevState, [key]: dataAll[key] };
-        } else {
-          return prevState;
-        }
-      });
+      /*  setAllIds(prevState => {
+         if (!prevState[key] || !Array.isArray(prevState[key]) || !prevState[key].some(item => item._id === dataAll[key][0]._id)) {
+           return { ...prevState, [key]: dataAll[key] };
+         } else {
+           return prevState;
+         }
+       }); */
+      if (messageAll === "Done") {
+        setLoading(false);
+      }
+      setAllIds((prevState) => ({
+        ...prevState,
+        [key]: dataAll[key],
+      }));
+      console.log();
 
-      setLoading(false);
     } catch (error) {
       setError(error.message);
+
+    } finally {
+
       setLoading(false);
     }
   }
- /*  console.log(objectForm); */
 
 
 
+  async function create(formName) {
+    try {
+
+       const selectedApi = forms.find((form) => form.formName === formName); 
+
+      if (!selectedApi) {
+        throw new Error('api not found');
+      }
 
 
-  return <div className="Create">
+      const { api } = selectedApi;
+      console.log( api );
+      const { data } = await axios.post(api, NewData, { headers });
+
+      if (data.message === 'Done') {
+        // Handle success
+        console.log("done");
+      }
+    } catch (error) {
+      setError(error.message);
+      console.log(error.message);
+    } finally {
+
+      setLoading(false);
+    }
+  }
+
+
+
+  return <div className="Create my-5">
+
 
     <div className='container '>
       <div className='justify-content-center align-item-center bg-light p-3'>
@@ -247,54 +303,100 @@ function Create() {
                 Create
               </Link>
               <ul className="dropdown-menu">
-                {itemCreate.map((item) => (
-                  <button key={item} onClick={() => getForm(item)}
+                {forms.map((e, Key) => (
+                  <button key={Key} onClick={() => getForm(e.formName)}
                     className="dropdown-item w-75 d-block text-start mx-3">
-                    {item}
+                    {e.formName}
                   </button>
                 ))}
               </ul>
             </div>
           </div>
 
-          {/*       {values ? Object.keys(values)?.map(key => (
-
-<div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
-
-  {!(userData.role === "Admin") ? <>
-    <span className='col-2 fs-4'>  {key} : </span>
-    <span className='col-10 fs-4'> {values[key]}</span>
-  </> : ""}
 
 
 
-   {userData.role === "Admin" ? <>
-    <span className='col-5'> Key: {key},&nbsp; Value:  {values[key]} </span>
-    <span className='col-2'>New {key} :</span>
+          {loading ?
+            <div>Loading...</div>
+            : <>
+              {objectForm.name ? <div className='mt-4'>
+                <div className=''>
+                  <hr className='w-75' />
+                  <span className='fs-1 me-3'>form Name :</span><span className='fs-1 fw-bold'>{objectForm.name}</span>
+                  <hr className='w-50' />
+                </div>
 
-    <input className=' col-3 ' onChange={(el) => {
-      setNewData((prevData) => ({
-        ...prevData,
-        [key]: el.target?.value
-      }));
-    }}
-      type="text" name={key} id={key} />
+                <div>
+                  {Object.keys(objectForm.form)?.map((element, key) =>
+                    <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
+                      <>
+                        <span className='col-2 fs-4'>
+                          {ids.includes(element) ? element.split("I")[0] :
+                            (formName === "subcategory" ? (element === "details" ? "inchPrice" : element) : element)}
+                        </span>
+
+                        <span className='d-inline col-10 fs-4'>
+                          {ids.includes(element) ?
+                            <div className=" dropdown col-2">
+                              <div className="nav-item dropdown btn btn-outline-primary">
+                                <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                  {Object.keys(selectedItem)?.some((k) => k === element.split("I")[0]) ? selectedItem[element.split("I")[0]] : 'Select an item'}
+                                </Link>
+                                <ul className="dropdown-menu">
+
+                                  {allIds[element.split("I")[0]]?.map((item, i) => (
+                                    <button key={i}
+
+                                      onClick={(e) => {
+                                        setNewData((prevData) => ({
+                                          ...prevData,
+                                          [element]: item._id
+
+                                        }));
+                                        setSelectedItem({ [element.split("I")[0]]: item.name });  // Update the selected item
+                                      }}
+
+                                      className="dropdown-item w-75 d-block text-start mx-3">
+                                      {item.name}
+                                    </button>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                            :
+                            <input className='d-inline fs-4' type="text" onChange={(el) => {
+                              let updatedValue = el.target.value;
+                              let newKey = element
+
+                              setNewData((prevData) => ({
+                                ...prevData,
+                                [newKey]: element === "details" ? { inchPrice: updatedValue } : updatedValue
+                              }));
+                            }} />}
+
+                        </span>
+                      </>
+                    </div>
+
+                  )}
+
+                </div>
 
 
-    <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
-  } 
+                <button className='btn col-1 btn-primary' onClick={() => create(formName)}> create</button>
+
+                {loading ? (
+                  <p>Loading...</p>
+                ) : error ? (
+                  <p>Error: {error}</p>
+                ) : null}
+
+              </div> : ""}
+            </>}
+
+
 
         </div>
-
-
-)) : "Loading..."}*/}
-
-
-
-        </div>
-
-
-
       </div>
 
 
