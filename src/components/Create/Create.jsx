@@ -120,12 +120,16 @@ function Create() {
   // all ids relationship in result to get it all
   const [ids, setIds] = useState(["categoryId", "subcategoryId", "titleId", "brandId"])
 
+  const [freshData, setFreshData] = useState({})
+
+  const [waitedIds, setWaitedIds] = useState({})
+
   const [selectedItem, setSelectedItem] = useState({});
 
 
-  console.log(NewData);
-  const [allIds, setAllIds] = useState({})
 
+  const [allIds, setAllIds] = useState({})
+  
   const [objectForm, setObjectForm] = useState({})
   const [forms, setForms] = useState([
     {
@@ -199,72 +203,78 @@ function Create() {
   useEffect(() => {
     handleIds()
     getIdsData()
+
   }, []);
 
 
   async function getForm(item) {
+    /* setWaitedIds({}); */
     const filteredForms = forms.filter((el) => el.formName === item);
     setFormName(item)
     setObjectForm({ name: item, form: filteredForms[0].form })
     await handleIds()
 
-
-
-    setLoading(false);
   }
-
 
   async function handleIds() {
     if (objectForm.form) {
       for (const key of Object.keys(objectForm.form)) {
         if (ids.includes(key)) {
-          getIdsData(key.split("I")[0]);
+          setWaitedIds((prevWaitedIds) => ({
+            ...prevWaitedIds,
+            [key.split("I")[0]]: ""  // Assuming you want to initialize the value to an empty string
+          }));
         }
       }
     }
   }
 
 
-  async function getIdsData(key) {
+
+
+  async function getIdsData() {
+    setLoading(true);
     try {
-      setLoading(true);
-      let apiAll = `http://127.0.0.1:5000/${key}`;
-      const responseAll = await axios.get(apiAll);
+      await Promise.all(ids.map(async (el) => {
+        el = el.split("I")[0];
+        let api = `http://127.0.0.1:5000/${el}`;
+        const response = await axios.get(api);
+        const { message, ...data } = response.data;
 
-      const { message: messageAll, ...dataAll } = responseAll.data;
-
-      //all
-      /*  setAllIds(prevState => {
-         if (!prevState[key] || !Array.isArray(prevState[key]) || !prevState[key].some(item => item._id === dataAll[key][0]._id)) {
-           return { ...prevState, [key]: dataAll[key] };
-         } else {
-           return prevState;
-         }
-       }); */
-      if (messageAll === "Done") {
-        setLoading(false);
-      }
-      setAllIds((prevState) => ({
-        ...prevState,
-        [key]: dataAll[key],
+        // Process data for each request
+        if (message === "Done") {
+          setFreshData((prevState) => ({
+            ...prevState,
+            [el]: data[el],
+          }));
+          await handleDisplay() 
+        }
       }));
-      console.log();
-
+      setLoading(false);
     } catch (error) {
       setError(error.message);
-
-    } finally {
-
-      setLoading(false);
     }
   }
-
-
-
+   
+  async function handleDisplay() {
+    console.log(allIds);
+  
+    for (const key of Object.keys(freshData)) {
+      if (waitedIds.includes(key)) {
+        console.log(freshData[key]);
+        setAllIds((prevAllIds) => ({
+          ...prevAllIds,
+          [key]: freshData[key]
+        }));
+      }
+    }
+  }
+  
+  
   async function create(formName) {
     try {
 
-       const selectedApi = forms.find((form) => form.formName === formName); 
+      const selectedApi = forms.find((form) => form.formName === formName);
 
       if (!selectedApi) {
         throw new Error('api not found');
@@ -272,7 +282,7 @@ function Create() {
 
 
       const { api } = selectedApi;
-      console.log( api );
+      console.log(api);
       const { data } = await axios.post(api, NewData, { headers });
 
       if (data.message === 'Done') {
@@ -282,9 +292,6 @@ function Create() {
     } catch (error) {
       setError(error.message);
       console.log(error.message);
-    } finally {
-
-      setLoading(false);
     }
   }
 
@@ -317,7 +324,7 @@ function Create() {
 
 
           {loading ?
-            <div>Loading...</div>
+            <div className='text-danger'>Loading...</div>
             : <>
               {objectForm.name ? <div className='mt-4'>
                 <div className=''>
@@ -344,7 +351,7 @@ function Create() {
                                 </Link>
                                 <ul className="dropdown-menu">
 
-                                  {allIds[element.split("I")[0]]?.map((item, i) => (
+                                  {(allIds?[element.split("I")[0]] : [])?.map((item, i) => ( 
                                     <button key={i}
 
                                       onClick={(e) => {
