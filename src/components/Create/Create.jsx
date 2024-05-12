@@ -108,29 +108,34 @@ export const createProduct = joi.object({
 
 function Create() {
 
-  //loading...
-  const [loading, setLoading] = useState(false);
-  //error massege
-  const [error, setError] = useState(null);
   //update data for the selected item
   const [NewData, setNewData] = useState({});
-  //form name
-  const [formName, setFormName] = useState()
+
 
   // all ids relationship in result to get it all
   const [ids, setIds] = useState(["categoryId", "subcategoryId", "titleId", "brandId"])
-
+  // data resh data id
   const [freshData, setFreshData] = useState({})
-
+  //copy data resh data id
+  const [dataDisplay, setDataDisplay] = useState({})
+  // id wanted data
   const [waitedIds, setWaitedIds] = useState({})
 
   const [selectedItem, setSelectedItem] = useState({});
 
 
 
-  const [allIds, setAllIds] = useState({})
-  
+  //form selected
   const [objectForm, setObjectForm] = useState({})
+  //form name
+  const [formName, setFormName] = useState()
+
+  //loading...
+  const [loading, setLoading] = useState(false);
+  //error massege
+  const [error, setError] = useState(null);
+
+
   const [forms, setForms] = useState([
     {
       formName: "brand",
@@ -165,7 +170,8 @@ function Create() {
           inchPrice: ""
         }
       },
-      api: `http://localhost:5000/subcategory/create/c/${NewData.categoryId}`
+      api: `http://localhost:5000/subcategory/create/c/`,
+      needParams: "categoryId",
     },
     {
       formName: "category",
@@ -173,7 +179,8 @@ function Create() {
         name: "",
         titleId: ""
       },
-      api: `http://localhost:5000/category/create/t/${NewData.titleId}`
+      api: `http://localhost:5000/category/create/t/`,
+      needParams: "titleId",
     },
     {
       formName: "title",
@@ -203,14 +210,24 @@ function Create() {
   useEffect(() => {
     handleIds()
     getIdsData()
+    setDataDisplay({ ...freshData })
+  }, [formName]);
 
-  }, []);
+
+
+  useEffect(() => {
+    handleeDataDisplay();
+  }, [selectedItem]);
 
 
   async function getForm(item) {
-    /* setWaitedIds({}); */
+    if (item) {
+      setWaitedIds({});
+      setSelectedItem({})
+      setFormName(item)
+    }
     const filteredForms = forms.filter((el) => el.formName === item);
-    setFormName(item)
+
     setObjectForm({ name: item, form: filteredForms[0].form })
     await handleIds()
 
@@ -230,12 +247,10 @@ function Create() {
   }
 
 
-
-
   async function getIdsData() {
-    setLoading(true);
+
     try {
-      await Promise.all(ids.map(async (el) => {
+      const promises = ids.map(async (el) => {
         el = el.split("I")[0];
         let api = `http://127.0.0.1:5000/${el}`;
         const response = await axios.get(api);
@@ -247,51 +262,70 @@ function Create() {
             ...prevState,
             [el]: data[el],
           }));
-          await handleDisplay() 
         }
-      }));
-      setLoading(false);
+      });
+
+      await Promise.all(promises);
+
+      setDataDisplay({ ...freshData });
     } catch (error) {
       setError(error.message);
     }
+    finally {
+      setDataDisplay({ ...freshData });
+    }
   }
-   
-  async function handleDisplay() {
-    console.log(allIds);
-  
-    for (const key of Object.keys(freshData)) {
-      if (waitedIds.includes(key)) {
-        console.log(freshData[key]);
-        setAllIds((prevAllIds) => ({
-          ...prevAllIds,
-          [key]: freshData[key]
-        }));
+
+
+
+  function handleeDataDisplay() {
+    for (const keyS of Object.keys(selectedItem)) {
+      if (freshData[keyS]) {
+        const selectedItemData = freshData[keyS].find((el) => el.name === selectedItem[keyS]);
+
+        if (selectedItemData) {
+          for (const key of Object.keys(selectedItemData)) {
+
+            if (freshData[key]) {
+              setDataDisplay((prev) => ({
+                ...prev,
+                [key]: selectedItemData[key]  // Assuming you want to initialize the value to an empty string
+              }));
+            }
+          }
+        }
       }
     }
   }
-  
-  
+
+
+
+
   async function create(formName) {
     try {
 
       const selectedApi = forms.find((form) => form.formName === formName);
-
       if (!selectedApi) {
         throw new Error('api not found');
       }
 
+      let api = ""
+      if (selectedApi.needParams) {
+        api = `${selectedApi.api}${NewData[selectedApi.needParams]}`
+      } else {
+        api = selectedApi.api;
+      }
 
-      const { api } = selectedApi;
-      console.log(api);
+
       const { data } = await axios.post(api, NewData, { headers });
 
       if (data.message === 'Done') {
         // Handle success
-        console.log("done");
+        getIdsData()
+        alert("Created Successfully")
       }
     } catch (error) {
       setError(error.message);
-      console.log(error.message);
     }
   }
 
@@ -346,28 +380,37 @@ function Create() {
                           {ids.includes(element) ?
                             <div className=" dropdown col-2">
                               <div className="nav-item dropdown btn btn-outline-primary">
-                                <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" >
                                   {Object.keys(selectedItem)?.some((k) => k === element.split("I")[0]) ? selectedItem[element.split("I")[0]] : 'Select an item'}
                                 </Link>
                                 <ul className="dropdown-menu">
 
-                                  {(allIds?[element.split("I")[0]] : [])?.map((item, i) => ( 
-                                    <button key={i}
+                                  {dataDisplay[element.split("I")[0]]?.map((item, i) => (
 
+                                    <button key={i}
                                       onClick={(e) => {
                                         setNewData((prevData) => ({
                                           ...prevData,
                                           [element]: item._id
 
                                         }));
-                                        setSelectedItem({ [element.split("I")[0]]: item.name });  // Update the selected item
+                                        setSelectedItem(
+                                          (prevData) => ({
+                                            ...prevData,
+                                            [element.split("I")[0]]: item.name // Update the selected item
+                                          })
+                                        );
+                                        handleeDataDisplay()
                                       }}
 
                                       className="dropdown-item w-75 d-block text-start mx-3">
                                       {item.name}
                                     </button>
-                                  ))}
+
+                                  ), [selectedItem])}
+
                                 </ul>
+
                               </div>
                             </div>
                             :
