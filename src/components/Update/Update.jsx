@@ -4,6 +4,7 @@ import './Update.css';
 import { Link, useParams } from 'react-router-dom'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { boolean } from 'yup';
 
 
 
@@ -34,7 +35,7 @@ function Update({ userData }) {
   const [idsData, setIdsData] = useState({})
 
   //objects to undisplayed from result to display data
-  const [display, setDisplay] = useState(["category", "Subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "isDeleted", "createdAt", "updatedAt", "__v", "updatedBy"])
+  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted"])
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -47,10 +48,13 @@ function Update({ userData }) {
 
   const [selectedItem, setSelectedItem] = useState({});
 
+  const [deleteS, setDeleteS] = useState(boolean);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log({ id, type });
     setLoading(true)
     if (getDate(id, type)) {
       setLoading(false)
@@ -63,14 +67,16 @@ function Update({ userData }) {
     try {
       let api = `http://127.0.0.1:5000/${type}?_id=${id}`
       const { message, ...resultData } = (await axios.get(api)).data;
-      /*  console.log(resultData[type][0]); */
 
+
+      console.log(deleteS);
       if (resultData) {
         let res = resultData[type][0]
         let filteredObj = Object.keys(res).reduce((acc, key) => {
           if (!display.includes(key)) {
             acc[key] = res[key];
           }
+          setDeleteS(resultData[type][0].isDeleted)
           return acc;
         }, {});
         handleIds(res)
@@ -166,7 +172,24 @@ function Update({ userData }) {
       let { data } = await axios.delete(`http://localhost:5000/${type}/${id}/delete`, { headers })
       console.log(`http://localhost:5000/${type}/${id}/delete`);
       if (data.message === 'Done') {
-        navigate("/")
+        navigate("../Search")
+      }
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  }
+
+  async function restoreData(type, id) {
+
+    try {
+      const newData = { "isDeleted": false }
+      let api = `http://127.0.0.1:5000/${type}/${id}/update`
+      let { data } = await axios.post(api, newData, { headers })
+      console.log(data);
+      if (data.message === 'Done') {
+        getDate(id, type)
       }
       setLoading(false);
     } catch (error) {
@@ -293,9 +316,16 @@ function Update({ userData }) {
 
         )) : ""}
 
-        {userData && userData.role === "Admin" && (
-          <button className=' ms-2 col-2 btn btn-danger' onClick={() => { deleteData(type, id) }}> delete</button>
-        )}
+        {deleteS && userData && userData.role === "Admin" ?
+          <>
+            <button className=' ms-2 col-2 btn btn-success' onClick={() => { restoreData(type, id) }}> restoration</button>
+          </> :
+          <>
+            <button className=' ms-2 col-2 btn btn-danger' onClick={() => { deleteData(type, id) }}> delete</button>
+          </>
+
+        }
+
 
       </div>
     </div>

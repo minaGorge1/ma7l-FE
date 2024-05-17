@@ -5,7 +5,8 @@ import { Link, useParams } from 'react-router-dom'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function Products({ userData }) {
+function Products({ userData, addProduct }) {
+
   let { subcategoryId } = useParams()
   let { productId } = useParams()
   let navigate = useNavigate()
@@ -30,7 +31,7 @@ function Products({ userData }) {
 
       let api = `http://127.0.0.1:5000/product?_id=${productId}`
       const { data } = await axios.get(api);
-      if (data.product.length === 0){
+      if (data.product.length === 0) {
         alert('product not found')
         navigate('/')
       }
@@ -56,7 +57,7 @@ function Products({ userData }) {
     }
   }
 
-  
+
 
   async function getProducts(subcategoryId) {
     try {
@@ -71,7 +72,7 @@ function Products({ userData }) {
   }
 
 
-//delete product
+  //delete product
   async function deleteData() {
 
     try {
@@ -109,7 +110,7 @@ function Products({ userData }) {
             <br />
 
             {product.description ? <><span>description :</span> <span>{product?.description}</span></> : ""}
-            
+
             {userData && userData.role === "Admin" && (
               <div className=''>
                 <span>realPrice :</span> <span className='realPrice text-danger'>{product?.realPrice}</span>
@@ -120,15 +121,25 @@ function Products({ userData }) {
 
             <br />
             <br />
+            <div className='justify-content-center align-item-center row'>
+              {userData && userData.role === "Admin" && (
+                <div className=' col-8'>
+                  <button className=' btn btn-primary me-2' onClick={() => { navigate(`../update/product/${product.id}`) }}> Edit</button>
+                  {/* <button className=' btn btn-success me-2'> create</button> */}
+                  <button className=' btn btn-danger' onClick={deleteData}> delete</button>
 
-            {userData && userData.role === "Admin" && (
-              <div className=''>
-                <button className=' btn btn-primary me-2' onClick={()=>{navigate("../update")}}> Edit</button>
-                {/* <button className=' btn btn-success me-2'> create</button> */}
-                <button className=' btn btn-danger' onClick={deleteData}> delete</button>
-                <br />
-              </div>
-            )}
+                </div>
+              )}
+              <button
+                className=' btn btn-success me-2 col-3'
+                onClick={() => {
+                  navigate("../order");
+                  addProduct(product);
+                }}
+              > add</button>
+
+
+            </div>
           </div>
 
 

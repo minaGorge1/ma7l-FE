@@ -11,8 +11,11 @@ function Search() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  //live data
   const [result, setResult] = useState([]);
+  // data deleted
+  const [resultDeleted, setResultDeleted] = useState([]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [itemQuery, setItemQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState(["brand", "product", "subcategory", "category", "title", "customer"])
@@ -24,12 +27,13 @@ function Search() {
   function handleFilter(item) {
     setItemQuery(item)
     search(searchQuery, item)
+    searchDeleted(searchQuery, item)
   }
 
   async function search(searchQuery, item = "product") {
 
     try {
-      let api = `http://127.0.0.1:5000/${item}?search=${searchQuery}`
+      let api = `http://127.0.0.1:5000/${item}?search=${searchQuery}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
 
       let data = Object.values(resultData)
@@ -40,8 +44,22 @@ function Search() {
 
   }
 
+  async function searchDeleted(searchQuery, item = "product") {
 
-  return (<div className="Search">
+    try {
+      let api = `http://127.0.0.1:5000/${item}?search=${searchQuery}&isDeleted=true`
+      const { message, ...resultData } = (await axios.get(api)).data;
+
+      let data = Object.values(resultData)
+      setResultDeleted(data);
+    } catch (error) {
+      setError(error.message);
+    }
+
+  }
+
+
+  return (<div className="Search my-5">
     Search Component
 
 
@@ -83,6 +101,7 @@ function Search() {
               onClick={() => {
                 if (itemQuery) {
                   search(searchQuery, itemQuery)
+                  searchDeleted(searchQuery, itemQuery)
                 }
               }}>Search</button>
 
@@ -103,13 +122,37 @@ function Search() {
           key={i}
           className='col-4 text-decoration-none'>
           <div className='p-2 text-white m-2 h6  bg-black opacity-75 text  item'>
-           <p>{el.name}</p> 
+            <p>{el.name}</p>
           </div>
         </Link>
         )}
 
       </div>
     </div>
+    {resultDeleted[0] ?
+
+      <div className='my-5'>
+        <p>is Deleted</p>
+        <div className='container  text-white rounded p-4'>
+          <div className=' justify-content-center align-item-center row'>
+
+            {resultDeleted[0]?.map((el, i) => <Link
+              to={`http://localhost:3000/update/${itemQuery}/${el._id}`}
+              key={i}
+              className='col-4 text-decoration-none'>
+              <div className='p-2 text-white m-2 h6  bg-black opacity-75 text  item'>
+                <p>{el.name}</p>
+              </div>
+            </Link>
+            )}
+
+          </div>
+        </div>
+        </div>
+
+      : ""}
+
+
     {error ? (
       <p>Error: {error}</p>
     ) : null}

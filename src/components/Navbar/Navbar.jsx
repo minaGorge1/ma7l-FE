@@ -22,8 +22,11 @@ export default function Navbar({ userData, logout }) {
                   <Link className="nav-link active" aria-current="page" to="home" >Home</Link>
                 </li>
                 <li className="nav-item">
-                  {userData.role === "Admin" ? <Link className="nav-link" to="create">create</Link> : null}
+                  {userData.role === "Admin" ? <> 
+                  <Link className="nav-link" to="create">Create</Link> 
+                  </>: null}
                 </li>
+                
                 <li className="nav-item">
                   <Link className="nav-link" to="Search">Search</Link>
                 </li>
@@ -41,11 +44,15 @@ export default function Navbar({ userData, logout }) {
                 <li className="nav-item">
                   <Link className="nav-link disabled" aria-disabled="true">Disabled</Link>
                 </li>
+                <li className="nav-item mx-4">
+                  <Link className="btn btn-light" to="order">Order</Link> 
+                </li>
               </ul>
               <form className="d-flex" role="search">
                 <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
                 <button className="btn btn-outline-dark" type="submit">Search</button>
               </form>
+              
             </>
             : null
           }

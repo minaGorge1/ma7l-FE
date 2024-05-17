@@ -23,7 +23,7 @@ function CategoryDetils() {
 
   async function getSubcategory(categoryId) {
     try {
-      const { data } = await axios.get(`http://127.0.0.1:5000/subcategory?categoryId=${categoryId}`);
+      const { data } = await axios.get(`http://127.0.0.1:5000/subcategory?categoryId=${categoryId}&isDeleted=false`);
       setSubcategoryies(data.subcategory);
       setLoading(false);
     } catch (error) {
@@ -35,9 +35,9 @@ function CategoryDetils() {
 
   async function getProducts(categoryId, subcategoryId = null) {
     try {
-      let api = `http://127.0.0.1:5000/product?categoryId=${categoryId}`
+      let api = `http://127.0.0.1:5000/product?categoryId=${categoryId}&isDeleted=false`
       if (subcategoryId) {
-        api = `http://127.0.0.1:5000/product?categoryId=${categoryId}&subcategoryId=${subcategoryId}`
+        api = `http://127.0.0.1:5000/product?categoryId=${categoryId}&subcategoryId=${subcategoryId}&isDeleted=false`
       }
       const { data } = await axios.get(api);
       setProducts(data.product);
