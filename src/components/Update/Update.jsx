@@ -54,7 +54,7 @@ function Update({ userData }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log({ id, type });
+
     setLoading(true)
     if (getDate(id, type)) {
       setLoading(false)
@@ -69,7 +69,6 @@ function Update({ userData }) {
       const { message, ...resultData } = (await axios.get(api)).data;
 
 
-      console.log(deleteS);
       if (resultData) {
         let res = resultData[type][0]
         let filteredObj = Object.keys(res).reduce((acc, key) => {
@@ -170,7 +169,6 @@ function Update({ userData }) {
 
     try {
       let { data } = await axios.delete(`http://localhost:5000/${type}/${id}/delete`, { headers })
-      console.log(`http://localhost:5000/${type}/${id}/delete`);
       if (data.message === 'Done') {
         navigate("../Search")
       }
@@ -187,7 +185,7 @@ function Update({ userData }) {
       const newData = { "isDeleted": false }
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
       let { data } = await axios.post(api, newData, { headers })
-      console.log(data);
+
       if (data.message === 'Done') {
         getDate(id, type)
       }

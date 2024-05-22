@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './Create.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import ResizeObserver from 'resize-observer-polyfill';
 
 //brand - product  - order - subcategory - category - title - customer
 
@@ -108,6 +109,26 @@ export const createProduct = joi.object({
 
 function Create() {
 
+  const ref = useRef(null);
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(entries => {
+      // Handle resize events here
+    });
+
+    // Observe the DOM element
+    if (ref.current instanceof Element) {
+      resizeObserver.observe(ref.current);
+    }
+
+    // Disconnect the observer when the component unmounts
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+
+
+
   //update data for the selected item
   const [NewData, setNewData] = useState({});
 
@@ -148,7 +169,7 @@ function Create() {
       formName: "product",
       form: {
         name: "",
-        details: "", //obj
+      /*   details: "", */ //obj
         stock: 0,
         realPrice: 1,
         finalPrice: 1,

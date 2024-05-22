@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import './Products.css';
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,14 +15,13 @@ function Products({ userData, addProduct }) {
   }
 
   const [product, setProduct] = useState({});
-  const [products, setProducts] = useState([]);
+  const [productsRla, setProductsRla] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     getProduct(productId)
-    getProducts(subcategoryId)
-  }, []);
+  }, [productId]);
 
 
 
@@ -36,7 +35,12 @@ function Products({ userData, addProduct }) {
         navigate('/')
       }
       setProduct(data.product[0]);
-      getbrand(data.product[0]?.brandId)
+
+      getProducts(data.product[0]?.subcategoryId, data.product[0])
+
+      getBrand(data.product[0]?.brandId)
+      getCategory(data.product[0]?.categoryId)
+      getSubcategory(data.product[0]?.subcategoryId)
       setLoading(false);
     } catch (error) {
       setError(error.message);
@@ -44,7 +48,24 @@ function Products({ userData, addProduct }) {
     }
   }
 
-  async function getbrand(brandId) {
+
+  async function getProducts(subcategoryId, realPro) {
+    try {
+      let api = `http://127.0.0.1:5000/product?subcategoryId=${subcategoryId}`
+      const { data } = await axios.get(api);
+
+      let filteredProducts = data.product.filter(el => el.name !== realPro.name);
+      setProductsRla(filteredProducts);
+
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  }
+
+
+  async function getBrand(brandId) {
     try {
 
       let api = `http://127.0.0.1:5000/brand?_id=${brandId}`
@@ -57,19 +78,33 @@ function Products({ userData, addProduct }) {
     }
   }
 
-
-
-  async function getProducts(subcategoryId) {
+  async function getCategory(categoryId) {
     try {
-      let api = `http://127.0.0.1:5000/product?subcategoryId=${subcategoryId}`
+
+      let api = `http://127.0.0.1:5000/category?_id=${categoryId}`
       const { data } = await axios.get(api);
-      setProducts(data.product);
+      setProduct((prevProduct) => ({ ...prevProduct, category: data.category[0] }));
       setLoading(false);
     } catch (error) {
       setError(error.message);
       setLoading(false);
     }
   }
+
+  async function getSubcategory(subcategoryId) {
+    try {
+
+      let api = `http://127.0.0.1:5000/subcategory?_id=${subcategoryId}`
+      const { data } = await axios.get(api);
+      setProduct((prevProduct) => ({ ...prevProduct, subcategory: data.subcategory[0] }));
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  }
+
+
 
 
   //delete product
@@ -98,7 +133,8 @@ function Products({ userData, addProduct }) {
     <div className='  justify-content-around align-item-center'>
       <div className='row justify-content-around'>
 
-        <div className='col-5 bg-body-tertiary border p-2 rounded mt-3 '>
+        {/* left icon */}
+        <div className='col-5 bg-body-tertiary border py-2 rounded my-3 '>
           <p className='fs-3 px-3'>product info</p>
           <hr className='mx-3 w-75' />
           <div className='px-3 fs-5'>
@@ -133,8 +169,9 @@ function Products({ userData, addProduct }) {
               <button
                 className=' btn btn-success me-2 col-3'
                 onClick={() => {
-                  navigate("../order");
                   addProduct(product);
+                  navigate("../order");
+
                 }}
               > add</button>
 
@@ -142,27 +179,85 @@ function Products({ userData, addProduct }) {
             </div>
           </div>
 
+          <div >
+            <hr className='mx-3 ' />
+            <p className='fs-3 pt-3 px-3 my-3'>Related products </p>
 
-        </div>
+            <div className='justify-content-between align-item-center p-3 m-3'>
 
-        <div className='col-5 bg-body-tertiary border p-2 rounded mt-3'>
-          <p className='fs-3 px-3'>brand info</p>
-          <hr className='mx-3 w-75' />
-          <div className='px-3 fs-5'>
-            <br />
-            <span>brand name :</span> <span>{product?.brand?.name}</span>
-            <br />
-            {product?.brand?.description && (
-              <>
-                <span>description :</span> <span>{product.brand.description}</span>
-              </>
-            )}
+              <div className='row justify-content-between'>
+                {productsRla?.map((pro, key) => {
+                  return (
+                    <Link className='p-1 col-2 item' key={key} to={`../subcategorydetils/${pro.subcategoryId}/product/${pro._id}`}>
+                      <button
+                        className='h6 btn btn-outline-primary '
+                      >
+                        {pro.name}
+                      </button>
+                    </Link>
+
+                  );
+                })}
+              </div>
+
+            </div>
+
           </div>
-        </div>
-
-        <div>
 
         </div>
+
+
+        {/* right icon */}
+        <div className='col-5 border rounded my-3 py-2'>
+
+          {/* display brand  */}
+          <div className=' bg-body-tertiary border  rounded mt-3'>
+            <p className='fs-3 px-3'>brand info</p>
+            <hr className='mx-3 w-75' />
+            <div className='p-3 fs-5'>
+              <span>brand name :</span> <span>{product?.brand?.name}</span>
+              <br />
+              {product?.brand?.description && (
+                <>
+                  <span>description :</span> <span>{product.brand.description}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* display category  */}
+          <div className=' bg-body-tertiary border p-2 rounded mt-3'>
+            <p className='fs-3 px-3'>category info</p>
+            <hr className='mx-3 w-75' />
+            <div className='p-3 fs-5'>
+              <span>category name :</span> <span>{product?.category?.name}</span>
+              <br />
+              {product?.category?.description && (
+                <>
+                  <span>description :</span> <span>{product.category.description}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* display subcategory  */}
+
+          <div className=' bg-body-tertiary border p-2 rounded mt-3'>
+            <p className='fs-3 px-3'>subcategory info</p>
+            <hr className='mx-3 w-75' />
+            <div className='p-3 fs-5'>
+              <span>subcategory name :</span> <span>{product?.subcategory?.name}</span>
+              <br />
+              {product?.subcategory?.description && (
+                <>
+                  <span>description :</span> <span>{product.subcategory.description}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+        </div>
+
 
 
       </div>

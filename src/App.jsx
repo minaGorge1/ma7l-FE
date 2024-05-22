@@ -65,12 +65,25 @@ function App() {
     return <Navigate to='/login' />
 
   }
-
+ 
   async function addProduct(pro) {
     if (!arrayProducts.includes(pro)) {
       setArrayProducts(prevProducts => [...prevProducts, pro]);
+      
     }
   }
+  async function deleteProduct(pro) {
+    if (pro) {
+     if (arrayProducts.includes(pro)) {
+      setArrayProducts(prevProducts => prevProducts.filter(el => el !== pro));
+      
+    } 
+    }else {
+      setArrayProducts([])
+    }
+    
+  }
+
 
   return (
     <Router>
@@ -84,14 +97,14 @@ function App() {
 
           <Route path="categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="categorydetils/:categoryId" element={<ProtectedRoute><CategoryDetils /></ProtectedRoute>} />
-          <Route path="subcategorydetils/:subcategoryId/products/:productId" element={<ProtectedRoute><Products userData={userData} addProduct={addProduct} /></ProtectedRoute>} />
+          <Route path="subcategorydetils/:subcategoryId/product/:productId" element={<ProtectedRoute><Products userData={userData} addProduct={addProduct} /></ProtectedRoute>} />
 
         
 
           <Route path="update/:type/:id" element={<ProtectedRoute><Update userData={userData} /></ProtectedRoute>} />
           <Route path="search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
-          <Route path="order" element={<ProtectedRoute><Order arrayProducts={arrayProducts} /></ProtectedRoute>} />
+          <Route path="order" element={<ProtectedRoute><Order arrayProducts={arrayProducts} addProduct={addProduct} deleteProduct={deleteProduct}/></ProtectedRoute>} />
 
 
 

@@ -81,7 +81,7 @@ function CategoryDetils() {
     <div className='row align-items-center justify-content-center bg-body-tertiary p-3 border border-2 rounded '>
 
       {products?.map((products, i) => <Link key={i} className='col-1'
-        to={'/subcategorydetils/' + categoryId + '/products/' + products.id}>
+        to={'/subcategorydetils/' + categoryId + '/product/' + products.id}>
         <button className='py-1 h6 btn btn-outline-dark item'>
           {products.name}
         </button></Link>

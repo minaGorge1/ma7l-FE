@@ -1,1 +1,29 @@
 .Order {}
+
+
+
+
+.position-search {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.icon-search {
+    min-height: 200px; /* Set minimum height */
+    flex: 1 1 auto; /* Make it flexible */
+    margin-bottom: 10px;
+}
+
+
+.close-search:hover {
+    background: #f00303;
+    cursor: pointer;
+    height: 50px;
+
+}
