@@ -18,7 +18,8 @@ function Search() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [itemQuery, setItemQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(["brand", "product", "subcategory", "category", "title", "customer"])
+  // filter search
+  const [filteredSearch, setFilteredSearch] = useState(["brand", "product", "subcategory", "category", "title", "customer"])
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -85,7 +86,7 @@ function Search() {
                   Dropdown
                 </Link>
                 <ul className="dropdown-menu">
-                  {filteredProducts.map((item) => (
+                  {filteredSearch.map((item) => (
                     <button key={item} onClick={() => handleFilter(item)}
                       className="dropdown-item w-75 d-block text-start mx-3">
                       {item}

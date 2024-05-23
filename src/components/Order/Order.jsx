@@ -29,11 +29,15 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   const [productsDisplay, setProductsDisplay] = useState([])
   //products send
   let [products, setProducts] = useState([]);
+  // final price
+  const [finalPrice, setFinalPrice] = useState('');
 
-  //customer
+  //status
+  const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
 
-  const [customerName, setCustomerName] = useState('');
-  const [names, setNames] = useState([]);
+  //Order
+  const [order, setOrder] = useState({});
+  console.log(order);
 
   //error
   const [loading, setLoading] = useState(true);
@@ -42,7 +46,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   useEffect(() => {
     refData()
     getIdsData()
-
+    console.log(result);
+    console.log(products);
   }, []);
 
   // get all id data 
@@ -85,6 +90,14 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
     }
   }
+  /*   function refData() {
+      if (arrayProducts.length > 0) {
+        const uniqueProducts = arrayProducts.filter((product, index, self) => {
+          return index === self.findIndex((t) => t.id === product.id);
+        });
+        uniqueProducts.forEach(addToProducts)
+      }
+    } */
 
   // handle search
   function handleClick() {
@@ -95,8 +108,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     setSearchQuery(e.target.value);
     search(searchQuery)
   };
-
-
 
   async function search(searchQuery) {
 
@@ -121,7 +132,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
 
       setResult(resultData.product);
-      console.log(resultData.product)
     } catch (error) {
       setError(error.message);
     }
@@ -131,24 +141,29 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   //handle search customer
 
   const handleSearchCus = (value) => {
-    setCustomerName(value);
+    setOrder(prevOrder => ({ ...prevOrder, customerId: value?.value || " " }))
+
   };
 
-  useEffect(() => {
+  //customer name
+
+  /* useEffect(() => {
     if (customerName) {
       const matchingNames = idsData.customer.filter((el) => el.name === customerName);
       setNames(matchingNames);
     } else {
       setNames([]);
     }
-  }, [customerName]);
+  }, [customerName]); */
 
   const options = idsData.customer ? idsData.customer.map((el) => ({
-    value: el._id,
-    label: el.name,
+    value: el._id, // id
+    label: el.name, //  aly bizhr
   })) : [];
 
 
+
+  //add product and delete
 
   function addToProducts(item) {
     if (!productsDisplay.includes(item)) {
@@ -196,7 +211,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   }
 
 
-  return (<div className="Search  position-relative ">
+  return (<div className="Search position-relative ">
     Order Component
 
     {/* icon search */}
@@ -295,8 +310,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     <br />
 
 
-
-
     {/* open search */}
     <div className=' justify-content-center align-content-center row container py-2'>
 
@@ -317,7 +330,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
         <Select
           className="search-dropdown col-5"
-          value={customerName}
+          /*  value={customerName} */
           onChange={handleSearchCus}
           options={options}
         />
@@ -326,21 +339,74 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       </div>
     </div>
     <hr />
+
+    {/* note  + status + paid*/}
+
+    <div className='justify-content-around align-item-center row container'>
+
+      {/* note */}
+      <div className="mb-3 col-6">
+        <label htmlFor="exampleFormControlTextarea1" className="form-label">Notes</label>
+        <textarea
+          onChange={(e) => {
+            setOrder(prevOrder => ({ ...prevOrder, note: e.target?.value || " " }));
+          }}
+          className="form-control" id="fixedTextarea" rows="3" style={{ resize: "none" }}></textarea>
+      </div>
+
+      {/* status */}
+      <div className="mb-3 col-3 border-start border-end">
+        <label htmlFor="exampleFormControlTextarea1" className="form-label">status</label>
+
+        <div className=" dropdown">
+          <div className="nav-item dropdown btn btn-outline-primary">
+            <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {order.status ? order.status : "Dropdown"}
+            </Link>
+            <ul className="dropdown-menu">
+              {status.map((item, k) => (
+                <button key={k} onClick={(e) => {
+                  setOrder({ ...order, status: item });
+                }}
+                  className="dropdown-item w-75 d-block text-start mx-3">
+                  {item}
+                </button>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* paid */}
+      <div className="mb-3 col-3">
+        <label htmlFor="exampleFormControlTextarea1" className="form-label">paid</label>
+        <input
+          onChange={(e) => { setOrder({ ...order, paid: e.target?.value || " " }); }}
+          className="form-control" id="exampleFormControlTextarea1" rows="3" />
+      </div>
+
+    </div>
+
+
     {/* take order */}
-    <div className='container  text-white rounded p-4 bg-light mt-4'>
+    <div className='container  text-white rounded p-4 bg-light my-5'>
       <div className=' justify-content-center align-item-center row'>
 
         {/* head table */}
-        <div className='p-2 text-white  h6  bg-black opacity-75 text  item justify-content-center align-item-center row'>
-          <span className=' py-2 col-2 '>name</span>
-          <span className=' py-2 col-2 '>Price unit</span>
-          <span className=' py-2 col-2 '>realPrice</span>{/*  admin */}
-          <span className=' py-2 col-2 '>stock</span>
+        <div className='py-2 text-white  h6  bg-black opacity-75 text  item justify-content-between align-item-center row'>
+          <span className=' py-2 col-1 text-center'>Name</span>
+          <span className=' py-2 col-1 text-center'>Price unit</span>
+          <span className=' py-2 col-1 text-center'>Real Price</span>{/*  admin */}
+          <span className=' py-2 col-1 text-center'>Stock</span>
+          <span className=' py-2 col-1 text-center'>discount</span>
+          <span className=' py-2 text-center col-1 ms-1'>Category</span>
+          <span className=' py-2 col-1 text-center'>Brand</span>
+          <span className=' py-2 col-1 text-center'>inchPrice</span>
 
 
 
 
-          <Link className='col-2 '>
+          <Link className='col-2 text-center'>
             <button className=' btn btn-danger' onClick={() => {
               setProductsDisplay([]);
               setProducts([]);
@@ -348,7 +414,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
             }}>Delete All</button>
           </Link>
 
-          <span className=' py-2 col-1 '>final prise</span>
+          <span className=' py-2 col-1 '>Final prise</span>
         </div>
 
 
@@ -357,12 +423,25 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
           <div
             key={i}
             className=' text-decoration-none '>
-            <div className='p-2 text-white  h6  bg-black opacity-75 text  item justify-content-center align-item-center row'>
-              <span className=' py-2 col-2 '>{el.name}</span>
-              <span className=' py-2 col-2 '>{el.finalPrice}</span>
-              <span className=' py-2 col-2 '>{el.realPrice}</span>{/*  admin */}
-              <span className=" col-2  ">
-                <input className="w-50 py-2"
+            <div className='p-2 text-white  h6  bg-black opacity-75 text  item justify-content-between align-item-center row'>
+              <span className=' py-2 text-center col-1 ms-1'>{el.name}</span>
+
+              {/* Price unit */}
+              {el.subcategory?.details?.inchPrice ?
+                <span className=' py-2 text-center col-1 '>
+                  {el.finalPrice =
+                    Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]
+                      : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")}
+                </span> :
+                <span className=' py-2 text-center col-1 '>
+                  {el?.discount ? el?.finalPrice - el?.discount : el?.finalPrice}</span>}
+
+              {/* realPrice */}
+              <span className=' py-2 text-center col-1 realPrice'>{el.realPrice}</span>{/*  admin */}
+
+              {/* quantity */}
+              <span className=" col-1 text-center ">
+                <input className="w-50 py-2 "
                   placeholder={el.stock}
                   value={el?.quantity}
                   onChange={(e) => {
@@ -390,17 +469,87 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                     });
 
                   }} />
+
               </span>
 
+              {/* discount */}
+              <span className='col-1 text-center'>
+                <input className="w-50 py-2 "
+                  placeholder="dis"
+                  value={el?.discount}
+                  onChange={(e) => {
 
+                    setProducts(prev => {
+                      const index = prev.findIndex(item => item.productId === el._id);
+                      if (index !== -1) {
+                        const newArray = [...prev];
+                        newArray[index].discount = e?.target.value;
+                        return newArray;
+                      } else {
+                        return prev;
+                      }
+                    });
 
+                    setProductsDisplay(prev => {
+                      const index = prev.findIndex(item => item._id === el._id);
+                      if (index !== -1) {
+                        const newArray = [...prev];
+                        newArray[index].discount = e?.target.value || "";
+                        return newArray;
+                      } else {
+                        return prev;
+                      }
+                    });
 
+                  }} />
+              </span>
 
-              <Link className='col-2 '>
-                <button className=' btn btn-danger' onClick={() => { deleteToProducts(el) }}>delete</button>
+              <span className=' py-2 text-center col-1 ms-1'>{el.category.name}</span>
+
+              {/* brand */}
+              <span className=' py-2 col-1 text-center'>{el.brand.name}</span>
+
+              {/* inchPrice */}
+              {el.subcategory.details?.inchPrice ?
+                <input className="py-2 col-1 text-center "
+                  placeholder={el?.subcategory.details?.inchPrice}
+                  value={el?.inchPrice}
+                  onChange={(e) => {
+
+                    setProducts(prev => {
+                      const index = prev.findIndex(item => item.productId === el._id);
+                      if (index !== -1) {
+                        const newArray = [...prev];
+                        e.target.value ? newArray[index].inchPrice = e.target.value
+                          : newArray[index].inchPrice = el.subcategory.details.inchPrice
+                        /*  newArray[index].inchPrice = e.target.value || el?.subcategory.details?.inchPrice; */
+                        return newArray;
+                      } else {
+                        return prev;
+                      }
+                    });
+
+                    setProductsDisplay(prev => {
+                      const index = prev.findIndex(item => item._id === el._id);
+                      if (index !== -1) {
+                        const newArray = [...prev];
+                        newArray[index].inchPrice = e.target.value;
+                        return newArray;
+                      } else {
+                        return prev;
+                      }
+                    });
+
+                  }} />
+
+                : <span className=' py-2 col-1 text-center'>___</span>}
+
+              <Link className='col-2 text-center'>
+                <button className=' btn btn-danger' onClick={() => { deleteToProducts(el) }}>Delete</button>
               </Link>
 
-              <span className=' py-2 col-1 text-center '>{el.finalPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)}</span>
+              <span className=' py-2 col-1 text-center text-center'>
+                {el.finalPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)}</span>
             </div>
           </div>
         )}
