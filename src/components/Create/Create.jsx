@@ -169,7 +169,7 @@ function Create() {
       formName: "product",
       form: {
         name: "",
-      /*   details: "", */ //obj
+        /*   details: "", */ //obj
         stock: 0,
         realPrice: 1,
         finalPrice: 1,
@@ -271,7 +271,7 @@ function Create() {
   async function getIdsData() {
 
     try {
-      const promises = ids.map(async (el) => { 
+      const promises = ids.map(async (el) => {
         el = el.split("I")[0];
         let api = `http://127.0.0.1:5000/${el}?isDeleted=false`;
         const response = await axios.get(api);
@@ -298,7 +298,7 @@ function Create() {
   }
 
 
-
+// handlee Data Id Display 
   function handleeDataDisplay() {
     for (const keyS of Object.keys(selectedItem)) {
       if (freshData[keyS]) {

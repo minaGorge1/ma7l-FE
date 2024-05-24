@@ -26,13 +26,13 @@ function Update({ userData }) {
 
   // all anther ids relationship in result to get it all 
   const [allIds, setAllIds] = useState({})
-
+  // all anther ids relationship in result to get it all to display
+  const [allIdsDisplay, setAllIdsDisplay] = useState({})
 
   // id relationship in result 
   let [ownedIds, setOwnedIds] = useState({})
 
-  // all ids relationship in result
-  const [idsData, setIdsData] = useState({})
+
 
   //objects to undisplayed from result to display data
   const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted"])
@@ -60,6 +60,12 @@ function Update({ userData }) {
       setLoading(false)
     }
   }, []);
+
+  useEffect(() => {
+
+    handleeDataDisplay()
+  }, [selectedItem]);
+
 
 
   async function getDate(id, type) {
@@ -89,7 +95,7 @@ function Update({ userData }) {
 
   }
 
-
+  //update
   async function update() {
 
     try {
@@ -105,21 +111,20 @@ function Update({ userData }) {
 
   }
 
+  //get wanted ids like title or title and category
   function handleIds(res) {
     let filteredObj = Object.keys(res).reduce((acc, key) => {
 
       if (ids.includes(key)) {
-        /* console.log(key.split("I")[0]);
-        console.log(`${key} = ${res[key]}`); */
         acc[key.split("I")[0]] = res[key];
         getIdsData(key.split("I")[0], res[key])
       }
-      setIdsData(acc)
+
       return acc;
     }, {});
 
   }
-
+  //get data ids all and wanted
   async function getIdsData(key, id) {
     try {
       let apiAll = `http://127.0.0.1:5000/${key}`;
@@ -140,7 +145,13 @@ function Update({ userData }) {
           return prevState;
         }
       });
-
+      setAllIdsDisplay(prevState => {
+        if (!prevState[key] || !Array.isArray(prevState[key]) || !prevState[key].some(item => item._id === dataAll[key][0]._id)) {
+          return { ...prevState, [key]: dataAll[key] };
+        } else {
+          return prevState;
+        }
+      })
 
       //owned
       setOwnedIds((prevState) => {
@@ -162,6 +173,25 @@ function Update({ userData }) {
       setError(error.message);
       setLoading(false);
     }
+  }
+  //handle ids display
+  function handleeDataDisplay() {
+    Object.keys(selectedItem).forEach((keyS) => {
+      if (allIds[keyS]) {
+        const selectedItemData = allIds[keyS].find((el) => el.name === selectedItem[keyS]);
+
+        if (selectedItemData) {
+          Object.keys(selectedItemData).forEach((key) => {
+            if (allIds[key]) {
+              setAllIdsDisplay((prev) => ({
+                ...prev,
+                [key]: selectedItemData[key]  // Assuming you want to initialize the value to an empty string
+              }));
+            }
+          });
+        }
+      }
+    });
   }
 
   //delete product
@@ -281,12 +311,16 @@ function Update({ userData }) {
 
               <div className=" dropdown col-2">
                 <div className="nav-item dropdown btn btn-outline-primary">
-                  <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <Link className="nav-link dropdown-toggle"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
                     {Object.keys(selectedItem)?.some((k) => k === key) ? selectedItem[key] : 'Select an item'}
                   </Link>
                   <ul className="dropdown-menu">
 
-                    {allIds[key].map((item, i) => (
+                    {allIdsDisplay[key]?.map((item, i) => (
                       <button key={i}
 
                         onClick={(e) => {
@@ -295,7 +329,14 @@ function Update({ userData }) {
                             [`${key}Id`]: item._id
 
                           }));
-                          setSelectedItem({ [key]: item.name });  // Update the selected item
+
+
+                          setSelectedItem((prev) => ({
+                            ...prev,
+                            [key]: item.name
+                          }));  // Update the selected item
+                          handleeDataDisplay()
+
                         }}
 
                         className="dropdown-item w-75 d-block text-start mx-3">
@@ -330,13 +371,15 @@ function Update({ userData }) {
 
 
 
-    {loading ? (
-      <p>Loading...</p>
-    ) : error ? (
-      <p>Error: {error}</p>
-    ) : null}
+    {
+      loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>Error: {error}</p>
+      ) : null
+    }
 
-  </div>
+  </div >
   )
 };
 

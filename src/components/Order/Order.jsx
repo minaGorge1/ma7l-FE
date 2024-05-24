@@ -7,13 +7,14 @@ import Select from 'react-select';
 
 export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
+  const headers = {
+    "authorization": `Min@__${localStorage.getItem("token")}`
+  }
+
   // result from search
   const [result, setResult] = useState([]);
   // search close
   const [isVisible, setIsVisible] = useState(false);
-
-
-
 
   //id data
   const [idsData, setIdsData] = useState([]);
@@ -30,14 +31,13 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   //products send
   let [products, setProducts] = useState([]);
   // final price
-  const [finalPrice, setFinalPrice] = useState('');
+  const [finalPrice, setFinalPrice] = useState(0);
 
-  //status
+  //status 
   const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
 
   //Order
   const [order, setOrder] = useState({});
-  console.log(order);
 
   //error
   const [loading, setLoading] = useState(true);
@@ -46,9 +46,35 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   useEffect(() => {
     refData()
     getIdsData()
-    console.log(result);
-    console.log(products);
   }, []);
+
+
+  useEffect(() => {
+    if (products.length > 0) {
+      let newFinalPrice = 0;
+
+      [...new Set(productsDisplay)]?.reduce((acc, el) => {
+        const price = el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+        acc[el.name] = price;
+        newFinalPrice += price;
+        return acc;
+      }, {});
+
+      setFinalPrice(newFinalPrice);
+      setOrder((prev) => ({ ...prev, products }));
+    }
+  }, [products]);
+
+  //REFRESH component
+  function refresh() {
+    setProductsDisplay([]);
+    setProducts([]);
+    deleteProduct();
+    setFinalPrice("0")
+    setSearchQuery("")
+    setResult([])
+    getIdsData()
+  }
 
   // get all id data 
   async function getIdsData() {
@@ -147,15 +173,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
   //customer name
 
-  /* useEffect(() => {
-    if (customerName) {
-      const matchingNames = idsData.customer.filter((el) => el.name === customerName);
-      setNames(matchingNames);
-    } else {
-      setNames([]);
-    }
-  }, [customerName]); */
-
   const options = idsData.customer ? idsData.customer.map((el) => ({
     value: el._id, // id
     label: el.name, //  aly bizhr
@@ -186,8 +203,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
           const newProduct = {
             productId: item._id,
             quantity: "1",
-            discount: "",
-            inchPrice: ""
+            /*     discount: "",
+                inchPrice: "" */
           };
           const filteredProducts = prev.filter(product => product.productId !== item._id);
           return [...filteredProducts, newProduct];
@@ -208,6 +225,25 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     ));
 
     deleteProduct(item)
+  }
+
+  //create order
+
+  async function createOrder() {
+
+    try {
+
+      let api = `http://127.0.0.1:5000/order/create`
+      const { data } = await axios.post(api, order, { headers });
+      if (data.massage === "Done") {
+        refresh()
+        alert("Created Successfully")
+      }
+      console.log(data);
+    } catch (error) {
+      setError(error.message);
+    }
+
   }
 
 
@@ -377,12 +413,23 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
         </div>
       </div>
 
-      {/* paid */}
+      {/* paid + order done*/}
       <div className="mb-3 col-3">
-        <label htmlFor="exampleFormControlTextarea1" className="form-label">paid</label>
-        <input
-          onChange={(e) => { setOrder({ ...order, paid: e.target?.value || " " }); }}
-          className="form-control" id="exampleFormControlTextarea1" rows="3" />
+
+        <div>
+          <label htmlFor="exampleFormControlTextarea1" className="form-label">paid</label>
+          <input
+            placeholder={finalPrice}
+            onChange={(e) => { setOrder({ ...order, paid: e.target?.value || finalPrice }); }}
+            className="form-control" id="exampleFormControlTextarea1" rows="3" />
+        </div>
+
+        <div className='pt-4 px-4'>
+          <button className=" btn btn-success "
+            onClick={() => {
+              createOrder()
+            }}>Done</button>
+        </div>
       </div>
 
     </div>
@@ -427,14 +474,20 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
               <span className=' py-2 text-center col-1 ms-1'>{el.name}</span>
 
               {/* Price unit */}
-              {el.subcategory?.details?.inchPrice ?
+              {el.subcategory?.details?.inchPrice ? //lw siwr
                 <span className=' py-2 text-center col-1 '>
-                  {el.finalPrice =
-                    Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]
-                      : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")}
-                </span> :
+                  {el.finalPriceUnit =
+                    Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]  //lw md5l s3r al inch
+                      : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")} {/* lw mad5lsh s3r al inch */}
+                </span>
+                :
                 <span className=' py-2 text-center col-1 '>
-                  {el?.discount ? el?.finalPrice - el?.discount : el?.finalPrice}</span>}
+
+                  <span>{el.finalPriceUnit =
+                    (el.finalPrice - (el?.discount || 0))}</span>
+
+
+                </span>}
 
               {/* realPrice */}
               <span className=' py-2 text-center col-1 realPrice'>{el.realPrice}</span>{/*  admin */}
@@ -548,22 +601,34 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                 <button className=' btn btn-danger' onClick={() => { deleteToProducts(el) }}>Delete</button>
               </Link>
 
-              <span className=' py-2 col-1 text-center text-center'>
-                {el.finalPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)}</span>
+              <span className=' py-2 col-1 text-center text-center' >
+                {el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)}
+              </span>
             </div>
           </div>
+
         )}
+
+        <div className=' bg-black opacity-75 text-center   item  justify-content-end row align-content-center'>
+          <span className='col-2 ps-4 py-2  fs-5'>Final Prise :</span>
+          <span className='col-1 ps-4 py-1 fs-4'>{finalPrice}</span>
+        </div>
 
       </div>
     </div>
 
-    {error ? (
-      <p>Error: {error}</p>
-    ) : null}
 
 
 
-  </div>)
+    {
+      error ? (
+        <p>Error: {error}</p>
+      ) : null
+    }
+
+
+
+  </div >)
 };
 
 Order.propTypes = {};
