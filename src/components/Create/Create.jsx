@@ -4,7 +4,7 @@ import './Create.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ResizeObserver from 'resize-observer-polyfill';
-
+import joi from 'joi';
 //brand - product  - order - subcategory - category - title - customer
 
 //brand & title
@@ -155,16 +155,22 @@ function Create() {
   const [loading, setLoading] = useState(false);
   //error massege
   const [error, setError] = useState(null);
-
+  // error validation
+  let [errorLest, setErrorLest] = useState("")
 
   const [forms, setForms] = useState([
+    //brand
     {
       formName: "brand",
       form: {
         name: ""
       },
-      api: "http://127.0.0.1:5000/brand/create/"
+      api: "http://127.0.0.1:5000/brand/create/",
+      validators: joi.object({
+        name: joi.string().min(2).max(50).required(),
+      }).required()
     },
+    //product
     {
       formName: "product",
       form: {
@@ -179,8 +185,17 @@ function Create() {
         subcategoryId: "",
         brandId: ""
       },
-      api: "http://127.0.0.1:5000/product/create"
+      api: "http://127.0.0.1:5000/product/create",
+      validators: joi.object({
+        name: joi.string().min(2).max(50).required(),
+        description: joi.string(),
+        stock: joi.number().positive().integer().min(1).required(),
+        finalPrice: joi.number().positive().min(1).required(),
+        realPrice: joi.number().positive().min(1).required(),
+        details: joi.object(),
+      }).required()
     },
+    //subcategory
     {
       formName: "subcategory",
       form: {
@@ -193,7 +208,12 @@ function Create() {
       },
       api: `http://localhost:5000/subcategory/create/c/`,
       needParams: "categoryId",
+      validators: joi.object({
+        name: joi.string().min(2).max(50).required(),
+        details: joi.object()
+      }).required()
     },
+    //category
     {
       formName: "category",
       form: {
@@ -202,14 +222,22 @@ function Create() {
       },
       api: `http://localhost:5000/category/create/t/`,
       needParams: "titleId",
+      validators: joi.object({
+        name: joi.string().min(2).max(50).required(),
+      }).required()
     },
+    //title
     {
       formName: "title",
       form: {
         name: ""
       },
-      api: "http://127.0.0.1:5000/title/create/"
+      api: "http://127.0.0.1:5000/title/create/",
+      validators: joi.object({
+        name: joi.string().min(2).max(50).required(),
+      }).required()
     },
+    //customer
     {
       formName: "customer",
       form: {
@@ -220,7 +248,16 @@ function Create() {
         description: "",
         status: ["صافي", "ليه فلوس", "عليه فلوس"]
       },
-      api: "http://127.0.0.1:5000/customer/create/"
+      api: "http://127.0.0.1:5000/customer/create/",
+      validators: joi.object({
+        name: joi.string().max(20).required(),
+        phone: joi.array().items(joi.number().required()),
+        address: joi.string(),
+        mony: joi.number(),
+        description: joi.string(),
+        status: joi.string().valid('صافي', 'ليه فلوس', 'عليه فلوس').default('صافي'),
+      })
+
     }])
 
 
@@ -248,8 +285,7 @@ function Create() {
       setFormName(item)
     }
     const filteredForms = forms.filter((el) => el.formName === item);
-
-    setObjectForm({ name: item, form: filteredForms[0].form })
+    setObjectForm({ name: item, form: filteredForms[0].form, validators: filteredForms[0].validators })
     await handleIds()
 
   }
@@ -298,7 +334,7 @@ function Create() {
   }
 
 
-// handlee Data Id Display 
+  // handlee Data Id Display 
   function handleeDataDisplay() {
     for (const keyS of Object.keys(selectedItem)) {
       if (freshData[keyS]) {
@@ -320,35 +356,52 @@ function Create() {
   }
 
 
+  
+  function ValidData() {
+
+    return objectForm.validators.validate(NewData, { abortEarly: false })  // dy al btkarin w btl3lk 2h aly na2s
+
+  }
 
 
   async function create(formName) {
-    try {
 
-      const selectedApi = forms.find((form) => form.formName === formName);
-      if (!selectedApi) {
-        throw new Error('api not found');
+    let valid = ValidData() // vaild
+    if (valid.error == null) {
+
+      try {
+
+        const selectedApi = forms.find((form) => form.formName === formName);
+        if (!selectedApi) {
+          throw new Error('api not found');
+        }
+
+        let api = ""
+        if (selectedApi.needParams) {
+          api = `${selectedApi.api}${NewData[selectedApi.needParams]}`
+        } else {
+          api = selectedApi.api;
+        }
+
+
+        const { data } = await axios.post(api, NewData, { headers });
+
+        if (data.message === 'Done') {
+          // Handle success
+          getIdsData()
+          alert("Created Successfully")
+        }
+      } catch (error) {
+        setError(error.message);
       }
 
-      let api = ""
-      if (selectedApi.needParams) {
-        api = `${selectedApi.api}${NewData[selectedApi.needParams]}`
-      } else {
-        api = selectedApi.api;
-      }
 
-
-      const { data } = await axios.post(api, NewData, { headers });
-
-      if (data.message === 'Done') {
-        // Handle success
-        getIdsData()
-        alert("Created Successfully")
-      }
-    } catch (error) {
-      setError(error.message);
+    } else {
+      setErrorLest(valid.error.details)
     }
+
   }
+
 
 
 
@@ -358,6 +411,8 @@ function Create() {
     <div className='container '>
       <div className='justify-content-center align-item-center bg-light p-3'>
         <div className='row'>
+
+          {/* select item */}
           <span className='col-5 fs-4'>choose what you want to Create → </span>
           <div className=" dropdown col-5">
             <div className="nav-item dropdown btn btn-outline-success">
@@ -394,7 +449,7 @@ function Create() {
                       <>
                         <span className='col-2 fs-4'>
                           {ids.includes(element) ? element.split("I")[0] :
-                            (formName === "subcategory" ? (element === "details" ? "inchPrice" : element) : element)}
+                            (formName === "subcategory" ? (element === "details" ? "inchPrice" : element) : element)} {/* // for subcategory */}
                         </span>
 
                         <span className='d-inline col-10 fs-4'>
@@ -435,15 +490,25 @@ function Create() {
                               </div>
                             </div>
                             :
-                            <input className='d-inline fs-4' type="text" onChange={(el) => {
-                              let updatedValue = el.target.value;
-                              let newKey = element
+           
+                            <span>
+                              <input className='d-inline fs-4' type="text" onChange={(el) => {
+                                let updatedValue = el.target.value;
+                                let newKey = element
 
-                              setNewData((prevData) => ({
-                                ...prevData,
-                                [newKey]: element === "details" ? { inchPrice: updatedValue } : updatedValue
-                              }));
-                            }} />}
+                                setNewData((prevData) => ({
+                                  ...prevData,
+                                  [newKey]: element === "details" ? { inchPrice: updatedValue } : updatedValue
+                                }));
+                              }} />
+
+                              {errorLest.length > 0 ?
+                                errorLest.map((el, i) => el.context.key === element ?
+                                  <div key={i} className=' text-danger m-2 alert-danger'>{el.message}</div>
+                                  : "") : ""}
+
+                            </span>
+                          }
 
                         </span>
                       </>
@@ -453,7 +518,9 @@ function Create() {
 
                 </div>
 
-
+                {errorLest.length > 0 ?
+                  <div className=' text-danger m-2 alert-danger'>check all inputs</div>
+                  : ""}
                 <button className='btn col-1 btn-primary' onClick={() => create(formName)}> create</button>
 
                 {loading ? (

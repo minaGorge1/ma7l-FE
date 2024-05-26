@@ -4,6 +4,7 @@ import './Order.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Select from 'react-select';
+import joi from 'joi';
 
 export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
@@ -33,15 +34,27 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   // final price
   const [finalPrice, setFinalPrice] = useState(0);
 
+
   //status 
   const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
 
   //Order
   const [order, setOrder] = useState({});
 
+  //validators
+  const validators = {
+    noteSchema: joi.string().max(200),
+    paidSchema: joi.number().positive(),
+    quantitySchema: joi.number().positive().min(1),
+    discountSchema: joi.number(),
+    inchPriceSchema: joi.number().min(0).positive()
+  }
+
+
   //error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState({});
 
   useEffect(() => {
     refData()
@@ -52,16 +65,27 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   useEffect(() => {
     if (products.length > 0) {
       let newFinalPrice = 0;
+      let profit = 0;
 
       [...new Set(productsDisplay)]?.reduce((acc, el) => {
+
         const price = el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+        const realPrice = el.realPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
         acc[el.name] = price;
         newFinalPrice += price;
+        profit += price - realPrice;
+
         return acc;
       }, {});
 
       setFinalPrice(newFinalPrice);
-      setOrder((prev) => ({ ...prev, products }));
+
+      setOrder((prev) => ({
+        ...prev,
+        products,
+        "profitMargin": profit,
+
+      }));
     }
   }, [products]);
 
@@ -138,7 +162,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   async function search(searchQuery) {
 
     try {
-      let api = `http://127.0.0.1:5000/product?search=${searchQuery}&isDeleted=false`
+      let api = `http://127.0.0.1:5000/product?search=${searchQuery}|name=${searchQuery}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
 
 
@@ -232,14 +256,13 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   async function createOrder() {
 
     try {
-
+      /*  setOrder(prevOrder => ({ ...prevOrder, "ProfitMargin":  })) */
       let api = `http://127.0.0.1:5000/order/create`
       const { data } = await axios.post(api, order, { headers });
       if (data.massage === "Done") {
         refresh()
         alert("Created Successfully")
       }
-      console.log(data);
     } catch (error) {
       setError(error.message);
     }
@@ -385,9 +408,21 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
         <label htmlFor="exampleFormControlTextarea1" className="form-label">Notes</label>
         <textarea
           onChange={(e) => {
+            const { error } = validators.noteSchema.validate(e.target?.value);
+            if (error) {
+              setErrorMessage((prev) => {
+                return { ...prev, note: error.details[0].message };
+              }
+              );
+            } else {
+              setErrorMessage("");
+            }
             setOrder(prevOrder => ({ ...prevOrder, note: e.target?.value || " " }));
           }}
           className="form-control" id="fixedTextarea" rows="3" style={{ resize: "none" }}></textarea>
+        {errorMessage.note ?
+          <div className=' text-danger mx-2 alert-danger'>{errorMessage.note}</div>
+          : <div className='d-blok text-danger m-2 alert-danger'>{errorMessage.note}</div>}
       </div>
 
       {/* status */}
@@ -416,19 +451,53 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       {/* paid + order done*/}
       <div className="mb-3 col-3">
 
+        {/* paid */}
         <div>
           <label htmlFor="exampleFormControlTextarea1" className="form-label">paid</label>
           <input
+            id="paid"
+            name='paid'
             placeholder={finalPrice}
-            onChange={(e) => { setOrder({ ...order, paid: e.target?.value || finalPrice }); }}
-            className="form-control" id="exampleFormControlTextarea1" rows="3" />
+            onChange={(e) => {
+              const { error } = validators.paidSchema.validate(e.target?.value);
+              if (error) {
+                setErrorMessage((prev) => {
+                  return { ...prev, paid: error.details[0].message };
+                }
+                );
+
+              } else {
+                setOrder({ ...order, paid: e.target?.value || finalPrice });
+                setErrorMessage("");
+              }
+            }}
+            className="form-control" /* id="exampleFormControlTextarea1" */ rows="3" />
+          {errorMessage.paid ?
+            <div className=' text-danger mx-2 alert-danger'>{errorMessage.paid}</div>
+            : <div className='d-blok text-danger m-2 alert-danger'>{errorMessage.paid}</div>}
+
         </div>
 
-        <div className='pt-4 px-4'>
-          <button className=" btn btn-success "
-            onClick={() => {
-              createOrder()
-            }}>Done</button>
+        <div className='pt-4 '>
+
+          {order.paid < finalPrice ?
+            <div>
+              <button className=" btn btn-danger "
+                onClick={() => {
+                  createOrder()
+                }}>Done</button>
+              <p className='text-danger'>راجاء مراجعة الاسعار</p>
+            </div>
+            :
+            <div>
+              <button className=" btn btn-success "
+                onClick={() => {
+                  createOrder()
+                }}>Done</button>
+            </div>
+
+          }
+
         </div>
       </div>
 
@@ -441,19 +510,19 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
         {/* head table */}
         <div className='py-2 text-white  h6  bg-black opacity-75 text  item justify-content-between align-item-center row'>
-          <span className=' py-2 col-1 text-center'>Name</span>
-          <span className=' py-2 col-1 text-center'>Price unit</span>
-          <span className=' py-2 col-1 text-center'>Real Price</span>{/*  admin */}
-          <span className=' py-2 col-1 text-center'>Stock</span>
-          <span className=' py-2 col-1 text-center'>discount</span>
-          <span className=' py-2 text-center col-1 ms-1'>Category</span>
-          <span className=' py-2 col-1 text-center'>Brand</span>
-          <span className=' py-2 col-1 text-center'>inchPrice</span>
+          <span className=' py-2 col-1 text-center  border-end'>Name</span>
+          <span className=' py-2 col-1 text-center border-end'>Price unit</span>
+          <span className=' py-2 col-1 text-center border-end'>Real Price</span>{/*  admin */}
+          <span className=' py-2 col-1 text-center border-end'>Stock</span>
+          <span className=' py-2 col-1 text-center border-end'>discount</span>
+          <span className=' py-2 text-center col-1 ms-1 border-end'>Category</span>
+          <span className=' py-2 col-1 text-center border-end'>Brand</span>
+          <span className=' py-2 col-1 text-center border-end'>inchPrice</span>
 
 
 
 
-          <Link className='col-2 text-center'>
+          <Link className='col-2 text-center border-end'>
             <button className=' btn btn-danger' onClick={() => {
               setProductsDisplay([]);
               setProducts([]);
@@ -471,17 +540,17 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
             key={i}
             className=' text-decoration-none '>
             <div className='p-2 text-white  h6  bg-black opacity-75 text  item justify-content-between align-item-center row'>
-              <span className=' py-2 text-center col-1 ms-1'>{el.name}</span>
+              <span className=' py-2 text-center col-1 ms-1 border-end'>{el.name}</span>
 
               {/* Price unit */}
               {el.subcategory?.details?.inchPrice ? //lw siwr
-                <span className=' py-2 text-center col-1 '>
+                <span className=' py-2 text-center col-1 border-end'>
                   {el.finalPriceUnit =
                     Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]  //lw md5l s3r al inch
                       : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")} {/* lw mad5lsh s3r al inch */}
                 </span>
                 :
-                <span className=' py-2 text-center col-1 '>
+                <span className=' py-2 text-center col-1 border-end'>
 
                   <span>{el.finalPriceUnit =
                     (el.finalPrice - (el?.discount || 0))}</span>
@@ -490,14 +559,29 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                 </span>}
 
               {/* realPrice */}
-              <span className=' py-2 text-center col-1 realPrice'>{el.realPrice}</span>{/*  admin */}
+              <span className=' py-2 text-center col-1 realPrice border-end'>{el.realPrice}</span>{/*  admin */}
 
               {/* quantity */}
-              <span className=" col-1 text-center ">
+              <span className=" col-1 text-center border-end">
                 <input className="w-50 py-2 "
                   placeholder={el.stock}
-                  value={el?.quantity}
+                  value={el.quantity || ""}
                   onChange={(e) => {
+
+                    const { error } = validators.quantitySchema.validate(e.target.value || " ");
+                    if (error) {
+
+                      setErrorMessage((prev) => {
+                        return {
+                          ...prev,
+                          quantity: { [el.name]: error.details[0].message }
+                        };
+                      }
+                      );
+
+                    } else {
+                      setErrorMessage("");
+                    }
 
                     setProducts(prev => {
                       const index = prev.findIndex(item => item.productId === el._id);
@@ -514,7 +598,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                       const index = prev.findIndex(item => item._id === el._id);
                       if (index !== -1) {
                         const newArray = [...prev];
-                        newArray[index].quantity = e.target.value;
+                        newArray[index].quantity = e.target?.value;
                         return newArray;
                       } else {
                         return prev;
@@ -522,15 +606,29 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                     });
 
                   }} />
-
+                {errorMessage?.quantity?.[el.name] ?
+                  <div className=' text-danger m-2 alert-danger'>{errorMessage?.quantity?.[el.name]}</div>
+                  : " "}
               </span>
 
               {/* discount */}
-              <span className='col-1 text-center'>
+              <span className='col-1 text-center border-end'>
                 <input className="w-50 py-2 "
                   placeholder="dis"
-                  value={el?.discount}
+                  value={el?.discount || ""}
                   onChange={(e) => {
+
+                    const { error } = validators.discountSchema.validate(e.target.value || " ");
+                    if (error) {
+
+                      setErrorMessage((prev) => {
+                        return { ...prev, discount: { [el.name]: error.details[0].message } };
+                      }
+                      );
+
+                    } else {
+                      setErrorMessage("");
+                    }
 
                     setProducts(prev => {
                       const index = prev.findIndex(item => item.productId === el._id);
@@ -555,55 +653,73 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                     });
 
                   }} />
+                {errorMessage?.discount?.[el.name] ?
+                  <div className=' text-danger m-2 alert-danger'>{errorMessage?.discount?.[el.name]}</div>
+                  : " "}
               </span>
 
-              <span className=' py-2 text-center col-1 ms-1'>{el.category.name}</span>
+              <span className=' py-2 text-center col-1 ms-1 border-end'>{el.category.name}</span>
 
               {/* brand */}
-              <span className=' py-2 col-1 text-center'>{el.brand.name}</span>
+              <span className=' py-2 col-1 text-center border-end'>{el.brand.name}</span>
 
               {/* inchPrice */}
               {el.subcategory.details?.inchPrice ?
-                <input className="py-2 col-1 text-center "
-                  placeholder={el?.subcategory.details?.inchPrice}
-                  value={el?.inchPrice}
-                  onChange={(e) => {
+                <span className=" col-1 text-center border-end">
+                  <input className="py-2 w-100 text-center "
+                    placeholder={el?.subcategory.details?.inchPrice}
+                    value={el?.inchPrice || ""}
+                    onChange={(e) => {
+                      const { error } = validators.inchPriceSchema.validate(e.target.value || " ");
+                      if (error) {
 
-                    setProducts(prev => {
-                      const index = prev.findIndex(item => item.productId === el._id);
-                      if (index !== -1) {
-                        const newArray = [...prev];
-                        e.target.value ? newArray[index].inchPrice = e.target.value
-                          : newArray[index].inchPrice = el.subcategory.details.inchPrice
-                        /*  newArray[index].inchPrice = e.target.value || el?.subcategory.details?.inchPrice; */
-                        return newArray;
+                        setErrorMessage((prev) => {
+                          return { ...prev, inchPrice: { [el.name]: error.details[0].message } };
+                        }
+                        );
+
                       } else {
-                        return prev;
+                        setErrorMessage("");
                       }
-                    });
 
-                    setProductsDisplay(prev => {
-                      const index = prev.findIndex(item => item._id === el._id);
-                      if (index !== -1) {
-                        const newArray = [...prev];
-                        newArray[index].inchPrice = e.target.value;
-                        return newArray;
-                      } else {
-                        return prev;
-                      }
-                    });
+                      setProducts(prev => {
+                        const index = prev.findIndex(item => item.productId === el._id);
+                        if (index !== -1) {
+                          const newArray = [...prev];
+                          e.target.value ? newArray[index].inchPrice = e.target.value
+                            : newArray[index].inchPrice = el.subcategory.details.inchPrice
+                          /*  newArray[index].inchPrice = e.target.value || el?.subcategory.details?.inchPrice; */
+                          return newArray;
+                        } else {
+                          return prev;
+                        }
+                      });
 
-                  }} />
+                      setProductsDisplay(prev => {
+                        const index = prev.findIndex(item => item._id === el._id);
+                        if (index !== -1) {
+                          const newArray = [...prev];
+                          newArray[index].inchPrice = e.target.value;
+                          return newArray;
+                        } else {
+                          return prev;
+                        }
+                      });
 
-                : <span className=' py-2 col-1 text-center'>___</span>}
+                    }} />
+                  {errorMessage?.inchPrice?.[el.name] ?
+                    <div className=' text-danger m-2 alert-danger'>{errorMessage?.inchPrice?.[el.name]}</div>
+                    : " "} </span>
+                : <span className=' py-2 col-1 text-center border-end'>___</span>}
 
-              <Link className='col-2 text-center'>
-                <button className=' btn btn-danger' onClick={() => { deleteToProducts(el) }}>Delete</button>
+              <Link className='col-2 text-center border-end'>
+                <button className=' btn btn-danger ' onClick={() => { deleteToProducts(el) }}>Delete</button>
               </Link>
 
               <span className=' py-2 col-1 text-center text-center' >
                 {el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)}
               </span>
+
             </div>
           </div>
 
@@ -611,6 +727,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
         <div className=' bg-black opacity-75 text-center   item  justify-content-end row align-content-center'>
           <span className='col-2 ps-4 py-2  fs-5'>Final Prise :</span>
+
           <span className='col-1 ps-4 py-1 fs-4'>{finalPrice}</span>
         </div>
 
