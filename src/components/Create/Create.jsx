@@ -5,6 +5,10 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ResizeObserver from 'resize-observer-polyfill';
 import joi from 'joi';
+
+
+
+
 //brand - product  - order - subcategory - category - title - customer
 
 //brand & title
@@ -192,7 +196,10 @@ function Create() {
         stock: joi.number().positive().integer().min(1).required(),
         finalPrice: joi.number().positive().min(1).required(),
         realPrice: joi.number().positive().min(1).required(),
-        details: joi.object(),
+        titleId: joi.string(),
+        categoryId: joi.string(),
+        subcategoryId: joi.string(),
+        brandId: joi.string()
       }).required()
     },
     //subcategory
@@ -210,7 +217,11 @@ function Create() {
       needParams: "categoryId",
       validators: joi.object({
         name: joi.string().min(2).max(50).required(),
-        details: joi.object()
+        titleId: joi.string(),
+        categoryId: joi.string(),
+        details: joi.object({
+          inchPrice: joi.string()
+        })
       }).required()
     },
     //category
@@ -223,6 +234,7 @@ function Create() {
       api: `http://localhost:5000/category/create/t/`,
       needParams: "titleId",
       validators: joi.object({
+        titleId: joi.string(),
         name: joi.string().min(2).max(50).required(),
       }).required()
     },
@@ -276,7 +288,7 @@ function Create() {
   useEffect(() => {
     handleeDataDisplay();
   }, [selectedItem]);
-
+  console.log(NewData);
 
   async function getForm(item) {
     if (item) {
@@ -356,7 +368,7 @@ function Create() {
   }
 
 
-  
+
   function ValidData() {
 
     return objectForm.validators.validate(NewData, { abortEarly: false })  // dy al btkarin w btl3lk 2h aly na2s
@@ -397,6 +409,7 @@ function Create() {
 
 
     } else {
+      console.log(valid.error.details);
       setErrorLest(valid.error.details)
     }
 
@@ -445,11 +458,23 @@ function Create() {
 
                 <div>
                   {Object.keys(objectForm.form)?.map((element, key) =>
+
                     <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
                       <>
                         <span className='col-2 fs-4'>
-                          {ids.includes(element) ? element.split("I")[0] :
-                            (formName === "subcategory" ? (element === "details" ? "inchPrice" : element) : element)} {/* // for subcategory */}
+                          {ids.includes(element) ? element.split("I")[0]
+                            :
+
+                            (formName === "subcategory" && NewData.titleId === "657c656b1935a2a5ad47c237" ?
+                              (element === "details" ? "inchPrice" : element) :
+                              (element === "details" ? element = undefined && delete formName.form.details : element)
+                            )
+
+
+
+
+
+                          } {/* // for subcategory */}
                         </span>
 
                         <span className='d-inline col-10 fs-4'>
@@ -490,17 +515,39 @@ function Create() {
                               </div>
                             </div>
                             :
-           
                             <span>
-                              <input className='d-inline fs-4' type="text" onChange={(el) => {
-                                let updatedValue = el.target.value;
-                                let newKey = element
 
-                                setNewData((prevData) => ({
-                                  ...prevData,
-                                  [newKey]: element === "details" ? { inchPrice: updatedValue } : updatedValue
-                                }));
-                              }} />
+                              {formName === "subcategory" && NewData.titleId === "657c656b1935a2a5ad47c237" && element === "details" ? (
+                                <input
+                                  className='d-inline fs-4'
+                                  type="text"
+                                  onChange={(el) => {
+                                    const updatedValue = el.target.value;
+                                    setNewData((prevData) => ({
+                                      ...prevData,
+                                      [element]: { inchPrice: updatedValue }
+                                    }));
+                                  }}
+                                />
+                              ) : (
+                                element === undefined ? " " : (
+                                  <>
+                                    <input
+                                      className='d-inline fs-4'
+                                      type="text"
+                                      onChange={(el) => {
+                                        const updatedValue = el.target.value;
+                                        setNewData((prevData) => (
+                                          formName === "subcategory"
+                                            ? { ...prevData, [element]: updatedValue, details: "" }
+                                            : { ...prevData, [element]: updatedValue }
+                                        ));
+                                      }}
+                                    />
+                                  </>
+                                )
+                              )}
+
 
                               {errorLest.length > 0 ?
                                 errorLest.map((el, i) => el.context.key === element ?

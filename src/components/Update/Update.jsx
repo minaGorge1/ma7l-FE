@@ -35,7 +35,7 @@ function Update({ userData }) {
 
 
   //objects to undisplayed from result to display data
-  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "id", "_id", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted"])
+  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted" , "status"])
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -45,6 +45,8 @@ function Update({ userData }) {
 
   //result don't have Ids
   const [values, setValues] = useState({});
+
+  const [status, setStatus] = useState(["صافي","ليه فلوس", "عليه فلوس"]);
 
   const [selectedItem, setSelectedItem] = useState({});
 
@@ -354,6 +356,66 @@ function Update({ userData }) {
           </div>
 
         )) : ""}
+
+        
+
+{result.status ? 
+          <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center'>
+
+            {!(userData.role === "Admin") ? <>
+              <span className='col-3 fs-4'>  status : </span>
+              <span className='col-9 fs-4'>{result.status}</span>
+            </> : ""}
+
+            {userData.role === "Admin" ? <>
+              <span className='col-5'> status : ,&nbsp; {result.status}</span>
+              <span className='col-2'>New status :</span>
+
+              <div className=" dropdown col-2">
+                <div className="nav-item dropdown btn btn-outline-primary">
+                  <Link className="nav-link dropdown-toggle"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {(selectedItem)?.status ? selectedItem.status : 'Select an item'}
+                  </Link>
+                  <ul className="dropdown-menu">
+
+                    {status?.map((item, i) => (
+                      <button key={i}
+
+                        onClick={(e) => {
+                          setNewData((prevData) => ({
+                            ...prevData,
+                            status : item
+
+                          }));
+
+
+                          setSelectedItem((prev) => ({
+                            ...prev,
+                            status : item
+                          }));  // Update the selected item
+                          handleeDataDisplay()
+
+                        }}
+
+                        className="dropdown-item w-75 d-block text-start mx-3">
+                        {item}
+                      </button>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+
+              <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
+
+            }
+          </div>
+
+         : ""}
 
         {deleteS && userData && userData.role === "Admin" ?
           <>
