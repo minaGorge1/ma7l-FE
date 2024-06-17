@@ -1,11 +1,56 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import './Navbar.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 
 export default function Navbar({ userData, logout }) {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const expiresAt = userData?.exp;
+      const isTokenExpired = Date.now() / 1000 > expiresAt;
+
+      if (isTokenExpired || userData === null) {
+        navigate('/login', { replace: true });
+        logout()
+      }
+    }, 7200); // Run the code block every 7200 seconds (2 hours)
+
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, [userData, navigate]);
+
+  useEffect(() => {
+    let timeoutId = null;
+    let idleTime = 0;
+
+    const handleIdle = () => {
+      idleTime = idleTime + 1;
+      if (idleTime >= 300) { // 5 minutes
+        // perform actions when user is AFK or browser is frozen
+        navigate('/login', { replace: true });
+      }
+    };
+
+    const handleMouseMove = () => {
+      idleTime = 0;
+      clearTimeout(timeoutId);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+
+    timeoutId = setInterval(handleIdle, 1000); // check every 1 second
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      clearInterval(timeoutId);
+    };
+  }, [navigate]);
+
 
   return <>
     <nav className="navbar mb-4 nav-color navbar-expand-lg bg-black-opacity">
@@ -22,11 +67,11 @@ export default function Navbar({ userData, logout }) {
                   <Link className="nav-link active" aria-current="page" to="home" >Home</Link>
                 </li>
                 <li className="nav-item">
-                  {userData.role === "Admin" ? <> 
-                  <Link className="nav-link" to="create">Create</Link> 
-                  </>: null}
+                  {userData.role === "Admin" ? <>
+                    <Link className="nav-link" to="create">Create</Link>
+                  </> : null}
                 </li>
-                
+
                 <li className="nav-item">
                   <Link className="nav-link" to="Search">Search</Link>
                 </li>
@@ -45,14 +90,14 @@ export default function Navbar({ userData, logout }) {
                   <Link className="nav-link disabled" aria-disabled="true">Disabled</Link>
                 </li>
                 <li className="nav-item mx-4">
-                  <Link className="btn btn-light" to="order">Order</Link> 
+                  <Link className="btn btn-light" to="order">Order</Link>
                 </li>
               </ul>
               <form className="d-flex" role="search">
                 <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
                 <button className="btn btn-outline-dark" type="submit">Search</button>
               </form>
-              
+
             </>
             : null
           }
