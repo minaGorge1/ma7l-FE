@@ -12,7 +12,8 @@ import Update from './components/Update/Update';
 import Search from './components/Search/Search';
 import Create from './components/Create/Create';
 import Order from './components/Order/Order';
-import Categories from './components/Categories/Categories';
+import History from './components/History/History'
+import MissingProducts from './components/MissingProducts/MissingProducts'
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { Navigate } from 'react-router-dom';
@@ -78,7 +79,7 @@ function App() {
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route index path="home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
 
-          <Route path="categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+
           <Route path="categorydetils/:categoryId" element={<ProtectedRoute><CategoryDetils /></ProtectedRoute>} />
           <Route path="subcategorydetils/:subcategoryId/product/:productId" element={<ProtectedRoute><Products userData={userData} addProduct={addProduct} /></ProtectedRoute>} />
 
@@ -86,6 +87,9 @@ function App() {
           <Route path="search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
           <Route path="order" element={<ProtectedRoute><Order arrayProducts={arrayProducts} addProduct={addProduct} deleteProduct={deleteProduct} /></ProtectedRoute>} />
+
+          <Route path="History" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="missingproducts" element={<ProtectedRoute><MissingProducts /></ProtectedRoute>} />
 
           <Route path="login" element={<Login saveUserData={saveUserData} />} />
           <Route path="register" element={<Register />} />

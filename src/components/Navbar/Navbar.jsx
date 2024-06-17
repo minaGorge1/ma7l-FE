@@ -75,7 +75,13 @@ export default function Navbar({ userData, logout }) {
                 <li className="nav-item">
                   <Link className="nav-link" to="Search">Search</Link>
                 </li>
-                <li className="nav-item dropdown">
+                <li className="nav-item">
+                  <Link className="nav-link" to="history">History</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="missingproducts">Missing Products</Link>
+                </li>
+                {/* <li className="nav-item dropdown">
                   <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Dropdown
                   </Link>
@@ -85,10 +91,10 @@ export default function Navbar({ userData, logout }) {
                     <li><hr className="dropdown-divider" /></li>
                     <li><Link className="dropdown-item" >Something else here</Link></li>
                   </ul>
-                </li>
-                <li className="nav-item">
+                </li> */}
+                {/* <li className="nav-item">
                   <Link className="nav-link disabled" aria-disabled="true">Disabled</Link>
-                </li>
+                </li> */}
                 <li className="nav-item mx-4">
                   <Link className="btn btn-light" to="order">Order</Link>
                 </li>

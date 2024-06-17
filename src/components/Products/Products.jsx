@@ -117,6 +117,7 @@ function Products({ userData, addProduct }) {
       }
       setLoading(false);
     } catch (error) {
+      console.log(error.message);
       setError(error.message);
       setLoading(false);
     }
