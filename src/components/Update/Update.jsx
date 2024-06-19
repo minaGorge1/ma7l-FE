@@ -35,7 +35,7 @@ function Update({ userData }) {
 
 
   //objects to undisplayed from result to display data
-  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted" , "status"])
+  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted", "status"])
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -46,7 +46,7 @@ function Update({ userData }) {
   //result don't have Ids
   const [values, setValues] = useState({});
 
-  const [status, setStatus] = useState(["صافي","ليه فلوس", "عليه فلوس"]);
+  const [status, setStatus] = useState(["صافي", "ليه فلوس", "عليه فلوس"]);
 
   const [selectedItem, setSelectedItem] = useState({});
 
@@ -92,7 +92,7 @@ function Update({ userData }) {
       }
 
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
     }
 
   }
@@ -101,6 +101,7 @@ function Update({ userData }) {
   async function update() {
 
     try {
+      console.log(NewData);
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
       const { data } = await axios.post(api, NewData, { headers })
 
@@ -108,7 +109,7 @@ function Update({ userData }) {
         getDate(id, type)
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
     }
 
   }
@@ -172,7 +173,7 @@ function Update({ userData }) {
 
       setLoading(false);
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
       setLoading(false);
     }
   }
@@ -206,7 +207,7 @@ function Update({ userData }) {
       }
       setLoading(false);
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
       setLoading(false);
     }
   }
@@ -223,7 +224,7 @@ function Update({ userData }) {
       }
       setLoading(false);
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
       setLoading(false);
     }
   }
@@ -357,9 +358,9 @@ function Update({ userData }) {
 
         )) : ""}
 
-        
 
-{result.status ? 
+
+        {result.status ?
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center'>
 
             {!(userData.role === "Admin") ? <>
@@ -388,14 +389,14 @@ function Update({ userData }) {
                         onClick={(e) => {
                           setNewData((prevData) => ({
                             ...prevData,
-                            status : item
+                            status: item
 
                           }));
 
 
                           setSelectedItem((prev) => ({
                             ...prev,
-                            status : item
+                            status: item
                           }));  // Update the selected item
                           handleeDataDisplay()
 
@@ -415,7 +416,7 @@ function Update({ userData }) {
             }
           </div>
 
-         : ""}
+          : ""}
 
         {deleteS && userData && userData.role === "Admin" ?
           <>

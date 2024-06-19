@@ -123,7 +123,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
 
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
     }
     finally {
 
@@ -183,7 +183,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
       setResult(resultData.product);
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
     }
 
   }

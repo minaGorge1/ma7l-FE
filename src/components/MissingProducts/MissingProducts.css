@@ -1,1 +1,9 @@
 .MissingProducts {}
+
+.realPrice{
+    color: #ff6700;
+    opacity: 0 !important;
+}
+.realPrice:hover{
+    opacity:  1 !important;
+}

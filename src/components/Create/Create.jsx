@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import './Create.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import ResizeObserver from 'resize-observer-polyfill';
+/* import ResizeObserver from 'resize-observer-polyfill'; */
 import joi from 'joi';
-
 
 
 
@@ -113,25 +112,8 @@ export const createProduct = joi.object({
 
 function Create() {
 
-  const ref = useRef(null);
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver(entries => {
-      // Handle resize events here
-    });
 
-    // Observe the DOM element
-    if (ref.current instanceof Element) {
-      resizeObserver.observe(ref.current);
-    }
-
-    // Disconnect the observer when the component unmounts
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-
-
+ 
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -148,7 +130,7 @@ function Create() {
 
   const [selectedItem, setSelectedItem] = useState({});
 
-
+  const [status, setStatus] = useState(["صافي", "ليه فلوس", "عليه فلوس"]);
 
   //form selected
   const [objectForm, setObjectForm] = useState({})
@@ -254,11 +236,11 @@ function Create() {
       formName: "customer",
       form: {
         name: "",
-        phone: [""],
+        phone: "",
         address: "",
-        mony: null,
+        mony: 0,
         description: "",
-        status: ["صافي", "ليه فلوس", "عليه فلوس"]
+        status: ""
       },
       api: "http://127.0.0.1:5000/customer/create/",
       validators: joi.object({
@@ -288,7 +270,7 @@ function Create() {
   useEffect(() => {
     handleeDataDisplay();
   }, [selectedItem]);
-  console.log(NewData);
+
 
   async function getForm(item) {
     if (item) {
@@ -298,7 +280,9 @@ function Create() {
     }
     const filteredForms = forms.filter((el) => el.formName === item);
     setObjectForm({ name: item, form: filteredForms[0].form, validators: filteredForms[0].validators })
-    await handleIds()
+    if (!item === "customer") {
+      await handleIds()
+    }
 
   }
 
@@ -338,7 +322,7 @@ function Create() {
 
       setDataDisplay({ ...freshData });
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
     }
     finally {
       setDataDisplay({ ...freshData });
@@ -404,12 +388,13 @@ function Create() {
           alert("Created Successfully")
         }
       } catch (error) {
-        setError(error.message);
+
+        setError(error.response.data.message
+        );
       }
 
 
     } else {
-      console.log(valid.error.details);
       setErrorLest(valid.error.details)
     }
 
@@ -529,23 +514,83 @@ function Create() {
                                     }));
                                   }}
                                 />
+                              ) :
+                                (
+                                  /* 3adaaa */
+                                  element === undefined || element === "phone" || element === "status" ? " " : (
+                                    <>
+                                      <input
+                                        className='d-inline fs-4 '
+                                        type="text"
+                                        onChange={(el) => {
+                                          const updatedValue = el.target.value;
+                                          setNewData((prevData) => (
+                                            formName === "subcategory"
+                                              ? { ...prevData, [element]: updatedValue, details: "" }
+                                              : { ...prevData, [element]: updatedValue }
+                                          ));
+                                        }}
+                                      />
+                                    </>
+                                  )
+                                )
+                              }
+
+                              {formName === "customer" && element === "status" ? (
+                                <div className=" dropdown col-2">
+                                  <div className="nav-item dropdown btn btn-outline-primary">
+                                    <Link className="nav-link dropdown-toggle"
+                                      role="button"
+                                      data-bs-toggle="dropdown"
+                                      aria-expanded="false"
+                                    >
+                                      {(selectedItem)?.status ? selectedItem.status : 'Select an item'}
+                                    </Link>
+                                    <ul className="dropdown-menu">
+
+                                      {status?.map((item, i) => (
+                                        <button key={i}
+
+                                          onClick={(e) => {
+                                            setNewData((prevData) => ({
+                                              ...prevData,
+                                              status: item
+
+                                            }));
+
+
+                                            setSelectedItem((prev) => ({
+                                              ...prev,
+                                              status: item
+                                            }));  // Update the selected item
+                                            handleeDataDisplay()
+
+                                          }}
+
+                                          className="dropdown-item w-75 d-block text-start mx-3">
+                                          {item}
+                                        </button>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
                               ) : (
-                                element === undefined ? " " : (
+                                element === "phone" ? (
                                   <>
                                     <input
                                       className='d-inline fs-4'
                                       type="text"
                                       onChange={(el) => {
                                         const updatedValue = el.target.value;
+                                        const numbers = []
+                                        numbers.push(updatedValue)
                                         setNewData((prevData) => (
-                                          formName === "subcategory"
-                                            ? { ...prevData, [element]: updatedValue, details: "" }
-                                            : { ...prevData, [element]: updatedValue }
+                                          { ...prevData, [element]: numbers }
                                         ));
                                       }}
                                     />
                                   </>
-                                )
+                                ) : " "
                               )}
 
 
