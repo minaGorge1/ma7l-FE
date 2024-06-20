@@ -8,7 +8,7 @@ function MissingProducts() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-
+  const [title, setTitle] = useState("")
   const [product, setProduct] = useState([]);
   const [disProduct, setDisProduct] = useState([]);
 
@@ -60,6 +60,7 @@ function MissingProducts() {
   async function getDate(title = "657c656b1935a2a5ad47c237", num = 30) {
 
     try {
+      setTitle(title)
       setLoading(true)
       let api = `http://127.0.0.1:5000/product?stock[lt]=${num}&titleId=${title}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
@@ -148,7 +149,7 @@ function MissingProducts() {
           </div>
         </div>
       ) : (
-        product.map((el) => (
+        [...new Set(product)].map((el) => (
           <div key={el._id} className="p-1">
             <div className="p-1 fs-5 text-white bg-black opacity-75 item justify-content-between align-item-center row rounded-3">
               <span className="py-2 col-1 text-center">{el.name}</span>
