@@ -259,8 +259,9 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       /*  setOrder(prevOrder => ({ ...prevOrder, "ProfitMargin":  })) */
       let api = `http://127.0.0.1:5000/order/create`
       const { data } = await axios.post(api, order, { headers });
-      if (data.massage === "Done") {
+      if (data.message === "Done") {
         refresh()
+
         alert("Created Successfully")
       }
     } catch (error) {
@@ -347,7 +348,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                 </div>
 
 
-                <Link to={`http://localhost:3000/subcategorydetils/${el.subcategoryId}/product/${el._id}`} className='col-6 '>
+                <Link to={`http://localhost:3000/product/${el._id}`} className='col-6 '>
                   <button className='btn btn-success' onClick={() => { }}>data</button>
                 </Link>
                 <button className='col-6 btn btn-info' onClick={() => {

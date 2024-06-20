@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import './MissingProducts.css';
 import axios from 'axios';
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Await, Link, Navigate, useParams } from 'react-router-dom'
 
 function MissingProducts() {
   const [loading, setLoading] = useState(false);
@@ -19,12 +19,25 @@ function MissingProducts() {
 
 
   useEffect(() => {
-    setLoading(true)
-    getIdsData();
-    getDate();
-    setLoading(false)
-
+   /*  setLoading(true); */
+    getIdsData().then(() => {
+        /* getDate().then(() => {
+         setLoading(false);
+       });  */
+    });
   }, []);
+
+
+  useEffect(() => {
+    if (product.length > 0 && product[0].brand) {
+
+      
+
+      setDisProduct(product);
+
+    }
+  }, [product]);
+
 
 
   // get all id data 
@@ -43,6 +56,7 @@ function MissingProducts() {
             ...prevState,
             [el]: data[el],
           }));
+
         }
       });
 
@@ -64,60 +78,87 @@ function MissingProducts() {
       setLoading(true)
       let api = `http://127.0.0.1:5000/product?stock[lt]=${num}&titleId=${title}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
-
-      if (message === "Done" && resultData.product.length > 0) {
-        const processedData = resultData.product.map((el) => {
-          const transformedProduct = { ...el };
-          Object.entries(el).forEach(([key, value]) => {
-            if (ids.includes(key)) {
+      const prosesData = await Promise.all(resultData.product.map(async (el) => {
+        /* for (const id of ids) {
+          for (const key in el) {
+            if (id === key) {
               const idValue = key.split("I")[0];
-              transformedProduct[idValue] = idsData[idValue]?.find((item) => item._id === value);
+              if (idsData[idValue]) {
+                el[idValue] = idsData[idValue].find((item) => item._id === el[id]);
+              }
             }
-          });
-          return transformedProduct;
+          }
+        } */
+        return await processElement(el);
+      }));
+      if (prosesData ) {
+        setProduct(() => {
+          return [...prosesData]
         });
-        setProduct(processedData);
+      } else {
+        setProduct([])
       }
-
-      if (product[0]?.brand) {
-        setLoading(false)
-      }
-
+      console.log(product);
+      setLoading(false)
     } catch (error) {
       setError(error.response.data.message);
     }
-    finally {
-      /* setLoading(false) */
-    }
-
   }
 
 
+  // Function to process each product element
+  async function processElement(el) {
+    for (const id of ids) {
+      for (const key in el) {
+        if (id === key) {
+          const idValue = key.split("I")[0];
+          if (idsData[idValue]) {
+            el[idValue] = idsData[idValue].find((item) => item._id === el[id]);
+          }
+        }
+      }
+    }
+    return el;
+  }
+
 
   return <div className="MissingProducts counter mb-5">
-    MissingProducts Component
+    {/*  MissingProducts Component */}
 
 
-    <div className='m-4'>
-      <span className='col-5 fs-4'>title </span>
-      <span><div className=" dropdown col-5">
-        <div className="nav-item dropdown btn btn-outline-success">
-          <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            title
-          </Link>
-          <ul className="dropdown-menu">
-            {idsData?.title?.map((e, Key) => (
-              <button key={Key} onClick={() => getDate(e.id)}
-                className="dropdown-item w-75 d-block text-start mx-3">
-                {e.name}
-              </button>
-            ))}
-          </ul>
-        </div>
-      </div></span>
+    <div className='m-4 justify-content-between align-item-center row'>
+
+      <div className='col-5 fs-4 justify-content-center align-item-center row'>
+        <span className='col-2 fs-4'>title :</span>
+        <span className='col-2 fs-4'>
+          <div className=" dropdown col-5">
+            <div className="nav-item dropdown btn btn-outline-success">
+              <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                title
+              </Link>
+              <ul className="dropdown-menu">
+                {idsData.title?.map((e, Key) => (
+                  <button key={Key} onClick={() => getDate(e.id)}
+                    className="dropdown-item w-75 d-block text-start mx-3">
+                    {e.name}
+                  </button>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </span>
+      </div>
+
+      <div className='col-5 fs-4'>
+        <span className=' fs-4'>num : &nbsp;</span>
+        <span className=' fs-4'>
+          <input onClick={(e) => getDate(title, e.target.value)} type="number" name="" id="" />
+        </span>
+      </div>
 
     </div>
 
+    {/* table */}
     <div className=''>
 
       {/* table info */}
@@ -149,7 +190,8 @@ function MissingProducts() {
           </div>
         </div>
       ) : (
-        [...new Set(product)].map((el) => (
+        product.length > 0 ? ([...new Set(disProduct)].map((el) => (
+
           <div key={el._id} className="p-1">
             <div className="p-1 fs-5 text-white bg-black opacity-75 item justify-content-between align-item-center row rounded-3">
               <span className="py-2 col-1 text-center">{el.name}</span>
@@ -163,7 +205,7 @@ function MissingProducts() {
               <span className="py-2 col-1 text-center border-danger border-bottom-4">{el.stock}</span>
 
               <span className="py-2 col-1 text-center rounded-5">
-                <Link to={`http://localhost:3000/subcategorydetils/${el?.subcategory?.id}/product/${el._id}`}>
+                <Link to={`http://localhost:3000/product/${el._id}`}>
                   <button className="btn btn-success" onClick={() => { }}>
                     data
                   </button>
@@ -177,7 +219,9 @@ function MissingProducts() {
               </span>
             </div>
           </div>
-        ))
+        ))) : (<div className='text-danger text-center p-3'>
+          <span> No products found</span>
+        </div>)
       )}
 
 

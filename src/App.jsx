@@ -81,7 +81,7 @@ function App() {
 
 
           <Route path="categorydetils/:categoryId" element={<ProtectedRoute><CategoryDetils /></ProtectedRoute>} />
-          <Route path="subcategorydetils/:subcategoryId/product/:productId" element={<ProtectedRoute><Products userData={userData} addProduct={addProduct} /></ProtectedRoute>} />
+          <Route path="product/:productId" element={<ProtectedRoute><Products userData={userData} addProduct={addProduct} /></ProtectedRoute>} />
 
           <Route path="update/:type/:id" element={<ProtectedRoute><Update userData={userData} /></ProtectedRoute>} />
           <Route path="search" element={<ProtectedRoute><Search /></ProtectedRoute>} />

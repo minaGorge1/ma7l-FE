@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Products({ userData, addProduct }) {
 
-  let { subcategoryId } = useParams()
+  
   let { productId } = useParams()
   let navigate = useNavigate()
   let headers = {
@@ -189,7 +189,7 @@ function Products({ userData, addProduct }) {
               <div className='row justify-content-between'>
                 {productsRla?.map((pro, key) => {
                   return (
-                    <Link className='p-1 col-2 item' key={key} to={`../subcategorydetils/${pro.subcategoryId}/product/${pro._id}`}>
+                    <Link className='p-1 col-2 item' key={key} to={`../product/${pro._id}`}>
                       <button
                         className='h6 btn btn-outline-primary '
                       >
