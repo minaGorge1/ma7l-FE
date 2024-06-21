@@ -4,14 +4,25 @@ import './History.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-function History() {
+function History({ userData }) {
+  //order came from db
   const [orders, setOrders] = useState([])
 
+  //customer came from db
+  const [customers, setCustomers] = useState([])
+
+  //to show or hide details order
   const [orderDetails, setOrderDetails] = useState({})
-  console.log(orderDetails);
+
+  //update data for the selected item
+  const [NewData, setNewData] = useState({});
+
+  const headers = {
+    "authorization": `Min@__${localStorage.getItem("token")}`
+  }
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
 
   const now = new Date();
   const hours = now.getHours();
@@ -21,8 +32,8 @@ function History() {
   console.log(`${time} ${date}`)
 
   useEffect(() => {
-
     getDate()
+    getDateCustomer()
     setLoading(false);
 
 
@@ -76,6 +87,47 @@ function History() {
     }
   }
 
+  async function getDateCustomer() {
+
+    try {
+
+      setLoading(true)
+      let api = `http://localhost:5000/customer?isDeleted=false`
+      const { message, ...resultData } = (await axios.get(api)).data;
+
+      console.log(resultData);
+      if (await message === "Done" & resultData.customer.length > 0) {
+
+        setCustomers(() => {
+          return [...resultData.customer]
+        });
+
+      }
+      setLoading(false)
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+  }
+
+
+  async function update(id) {
+
+    try {
+      console.log(NewData);
+      let api = `http://127.0.0.1:5000/order/${id}/update`
+      const { data } = await axios.put(api, NewData, { headers })
+      console.log(data);
+      if (data.message === "Done") {
+        getDate()
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+
+  }
+
+
+
   return <div className="History my-5 pb-2">
     History Component
 
@@ -93,53 +145,153 @@ function History() {
 
           <div key={el._id}
             className={` p-2 rounded-3 bg-black opacity-75 my-3`}>
+
             <div className="p-1 fs-5 text-white item justify-content-between align-item-center row mb-2">
-              <div>
-                <span className="py-2 col-2 text-center opacity-50">Time :&nbsp; &nbsp;</span>
-                <span className="py-2 col-2 text-center">{el.time}</span>
-              </div>
+              {/* time */}
+              <div className="justify-content-between align-item-center row">
+                <span className='col-5'>
+                  <span className="py-2 col-2 text-center opacity-50">Time :&nbsp; &nbsp;</span>
+                  <span className="py-2 col-2 text-center">{el.time}</span>
+                </span>
 
-              <div>
-                <span className="py-2 col-5 text-center opacity-50">Data :&nbsp; &nbsp;</span>
-                <span className="py-2 col-5 text-center">{el.date}</span>
-              </div>
 
+                {userData.role === "Admin" ?
+                  <span className="col-7 justify-content-between align-item-center row mb-1">
+
+                    <span className='col-6'>
+                      <input className='' onChange={(el) => {
+                        setNewData((prevData) => ({
+                          ...prevData,
+                          time: el.target?.value
+                        }));
+                      }}
+                        type="text" />
+
+                    </span>
+
+
+                    <span className='col-6 '>
+                      <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button> </span>
+                  </span> : " "
+                }
+              </div>
+              {/* date */}
+              <div className="justify-content-between align-item-center row">
+                <span className='col-5'>
+                  <span className="py-2 col-5 text-center opacity-50">Date :&nbsp; &nbsp;</span>
+                  <span className="py-2 col-5 text-center">{el.date}</span>
+                </span>
+
+                {userData.role === "Admin" ?
+                  <span className="col-7 justify-content-between align-item-center row ">
+
+                    <span className='col-6'>
+                      <input className='' onChange={(el) => {
+                        setNewData((prevData) => ({
+                          ...prevData,
+                          date: el.target?.value
+                        }));
+                      }}
+                        type="text" />
+
+                    </span>
+
+                    <span className='col-6 '>
+                      <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button> </span>
+                  </span> : " "
+                }
+
+              </div>
+              {/* id order */}
               <div>
                 <span className="py-2 col-2 text-center opacity-50">id :&nbsp; &nbsp;</span>
                 <span className="py-2 col-2 text-center text-danger">{el._id}</span>
               </div>
-
+              {/* customer */}
               <div>
-                <span className="py-2 col-1 text-center opacity-50">customer :&nbsp; &nbsp;</span>
-                <span className="py-2 col-2 text-center">{el?.customer || "none"}</span>
+                <span className="py-2 col-1 text-center opacity-50">customer :&nbsp; &nbsp;</span><span className="py-2 col-2 text-center">
+                  {el.customerId
+                    ? customers?.find((cus) => cus._id === el.customerId).name
+                    : "none"}
+                </span>
               </div>
+              {/* note */}
+              <div className="justify-content-between align-item-center row">
+                <span className='col-5'>
+                  <span className="py-2 col-1 text-center opacity-50">note :&nbsp; &nbsp;</span>
+                  <span className="py-2 col-2 text-center">{el?.note || "empty"}</span>
+                </span>
 
-              <div>
-                <span className="py-2 col-1 text-center opacity-50">note :&nbsp; &nbsp;</span>
-                <span className="py-2 col-2 text-center">{el?.note || "empty"}</span>
+                {userData.role === "Admin" ?
+                  <span className="col-7 justify-content-between align-item-center row mb-1">
+
+                    <span className='col-6'>
+                      <input className='' onChange={(el) => {
+                        setNewData((prevData) => ({
+                          ...prevData,
+                          note: el.target?.value
+                        }));
+                      }}
+                        type="text" />
+
+                    </span>
+
+                    <span className='col-6 '>
+                      <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button> </span>
+                  </span> : " "
+                }
+
               </div>
-
+              {/* status */}
               <div>
                 <span className="py-2 col-1 text-center opacity-50">status :&nbsp; &nbsp;</span>
                 <span className="py-2 col-2 text-center">{el.status}</span>
               </div>
 
               <div>
-                <span className="py-2 col-1 text-center opacity-50">profitMargin :</span>
+                {/* profit */}
+                <span className="py-2 col-1 text-center opacity-50">profit :</span>
                 <span className='col-1 ps-4 py-1 fs-4 realPrice'>{el.profitMargin}</span>
               </div>
 
-              {!orderDetails[el._id] ? <div>
+              {!orderDetails[el._id] ?
                 <div>
-                  <span className="py-2 col-1 text-center opacity-50">Final Prise :</span>
-                  <span className='col-1 ps-4 py-1 fs-4 '>{el.finalPrice}</span>
-                </div>
+                  {/* Final Prise */}
+                  <div>
+                    <span className="py-2 col-1 text-center opacity-50">Final Prise :</span>
+                    <span className='col-1 ps-4 py-1 fs-4 '>{el.finalPrice}</span>
+                  </div>
+                  {/* paid */}
+                  <div className="justify-content-between align-item-center row">
 
-                <div>
-                  <span className="py-2 col-1 text-center opacity-50">Paid :</span>
-                  <span className='col-1 ps-4 py-1 fs-4 '>{el.paid}</span>
-                </div>
-              </div> : " "}
+                    <span className='col-5'>
+                      <span className="py-2 col-1 text-center opacity-50">Paid :</span>
+                      <span className='col-1 ps-4 py-1 fs-4 '>{el.paid}</span>
+                    </span>
+
+                    {userData.role === "Admin" ?
+                      <span className="col-7 justify-content-between align-item-center row">
+
+                        <span className='col-6'>
+                          <input className='' onChange={(el) => {
+                            setNewData((prevData) => ({
+                              ...prevData,
+                              paid: el.target?.value
+                            }));
+                          }}
+                            type="text" />
+
+                        </span>
+
+                        <span className='col-6 '>
+                          <button className='btn btn-primary ' onClick={() => { update(el._id) }}> update</button> </span>
+                      </span>
+                      : " "
+                    }
+
+
+                  </div>
+                </div> : " "}
 
 
 

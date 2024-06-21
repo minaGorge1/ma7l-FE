@@ -88,7 +88,7 @@ function App() {
           <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
           <Route path="order" element={<ProtectedRoute><Order arrayProducts={arrayProducts} addProduct={addProduct} deleteProduct={deleteProduct} /></ProtectedRoute>} />
 
-          <Route path="History" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="History" element={<ProtectedRoute><History userData={userData}/></ProtectedRoute>} />
           <Route path="missingproducts" element={<ProtectedRoute><MissingProducts /></ProtectedRoute>} />
 
           <Route path="login" element={<Login saveUserData={saveUserData} />} />

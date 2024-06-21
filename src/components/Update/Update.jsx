@@ -101,7 +101,6 @@ function Update({ userData }) {
   async function update() {
 
     try {
-      console.log(NewData);
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
       const { data } = await axios.post(api, NewData, { headers })
 
