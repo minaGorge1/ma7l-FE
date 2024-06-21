@@ -4,6 +4,8 @@ import './History.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Select from 'react-select';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/fontawesome-free-solid';
 function History({ userData }) {
   //order came from db
   const [orders, setOrders] = useState([])
@@ -13,6 +15,9 @@ function History({ userData }) {
 
   //to show or hide details order
   const [orderDetails, setOrderDetails] = useState({})
+
+  //to show or hide details order
+  const [openUpdate, setOpenUpdate] = useState({})
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -81,6 +86,10 @@ function History({ userData }) {
         setOrderDetails(() =>
           resultData.order.reduce((acc, el) => ({ ...acc, [el._id]: false }), {})
         )
+
+        setOpenUpdate(() =>
+          resultData.order.reduce((acc, el) => ({ ...acc, [el._id]: false }), {}))
+
       } else {
         setOrders([])
       }
@@ -116,6 +125,7 @@ function History({ userData }) {
 
   //update customer
   const handleSearchCus = (value) => {
+    console.log(value);
     setNewData(prevOrder => ({ ...prevOrder, customerId: value?.value || " " }))
   };
 
@@ -179,7 +189,7 @@ function History({ userData }) {
                 </span>
 
 
-                {userData.role === "Admin" ?
+                {userData.role === "Admin" && openUpdate[el._id] ?
                   <span className="col-7 justify-content-between align-item-center row ">
 
                     <span className='col-6'>
@@ -207,7 +217,7 @@ function History({ userData }) {
                   <span className="py-2 col-5 text-center">{el.date}</span>
                 </span>
 
-                {userData.role === "Admin" ?
+                {userData.role === "Admin" && openUpdate[el._id] ?
                   <span className="col-7 justify-content-between align-item-center row ">
 
                     <span className='col-6'>
@@ -240,23 +250,22 @@ function History({ userData }) {
                   </span>
                 </span>
 
+                {userData.role === "Admin" && openUpdate[el._id] ?
+                  <span className="col-7 justify-content-between align-item-center row ">
+                    <Select
+                      className="search-dropdown text-black col-8 "
+                      /*  value={customerName} */
+                      onChange={handleSearchCus}
+                      options={options}
+                    />
 
-                <span className="col-7 justify-content-between align-item-center row ">
-                  <Select
-                    className="search-dropdown text-black col-8 "
-                    /*  value={customerName} */
-                    onChange={() => {
-                      handleSearchCus()
-                      /* update(el._id) */
-                    }}
-                    options={options}
-                  />
+                    <span className='col-3 '>
+                      <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
+                    </span>
 
-                  <span className='col-3 '>
-                    <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
-                  </span>
+                  </span> : " "
+                }
 
-                </span>
 
               </div>
               {/* note */}
@@ -266,7 +275,7 @@ function History({ userData }) {
                   <span className="py-2 col-2 text-center">{el?.note || "empty"}</span>
                 </span>
 
-                {userData.role === "Admin" ?
+                {userData.role === "Admin" && openUpdate[el._id] ?
                   <span className="col-7 justify-content-between align-item-center row mb-1">
 
                     <span className='col-6'>
@@ -293,30 +302,34 @@ function History({ userData }) {
                   <span className="py-2 col-1 text-center opacity-50">status :&nbsp; &nbsp;</span>
                   <span className="py-2 col-2 text-center">{el.status}</span>
                 </span>
-                <span className='justify-content-between align-item-between row col-7'>
 
-                  <span className=" col-6 dropdown">
-                    <span className="nav-item dropdown btn btn-outline-primary">
-                      <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {!NewData?.status ? el.status : (NewData?.status || "Dropdown")}
-                      </Link>
-                      <ul className="dropdown-menu">
-                        {status.map((item, k) => (
-                          <button key={k} onClick={(e) => {
-                            setNewData({ ...NewData, status: item });
-                          }}
-                            className="dropdown-item w-75 d-block text-start mx-3">
-                            {item}
-                          </button>
-                        ))}
-                      </ul>
+                {userData.role === "Admin" && openUpdate[el._id] ?
+                  <span className='justify-content-between align-item-between row col-7'>
+
+                    <span className=" col-6 dropdown">
+                      <span className="nav-item dropdown btn btn-outline-primary">
+                        <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          {!NewData?.status ? el.status : (NewData?.status || "Dropdown")}
+                        </Link>
+                        <ul className="dropdown-menu">
+                          {status.map((item, k) => (
+                            <button key={k} onClick={(e) => {
+                              setNewData({ ...NewData, status: item });
+                            }}
+                              className="dropdown-item w-75 d-block text-start mx-3">
+                              {item}
+                            </button>
+                          ))}
+                        </ul>
+                      </span>
+
                     </span>
+                    <span className='col-6 '>
+                      <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
+                    </span>
+                  </span>
+                  : ""}
 
-                  </span>
-                  <span className='col-6 '>
-                    <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
-                  </span>
-                </span>
 
 
 
@@ -324,8 +337,8 @@ function History({ userData }) {
 
               </div>
 
+              {/* profit */}
               <div>
-                {/* profit */}
                 <span className="py-2 col-1 text-center opacity-50">profit :</span>
                 <span className='col-1 ps-4 py-1 fs-4 realPrice'>{el.profitMargin}</span>
               </div>
@@ -345,7 +358,7 @@ function History({ userData }) {
                       <span className='col-1 ps-4 py-1 fs-4 '>{el.paid}</span>
                     </span>
 
-                    {userData.role === "Admin" ?
+                    {userData.role === "Admin" && openUpdate[el._id] ?
                       <span className="col-7 justify-content-between align-item-center row">
 
                         <span className='col-6'>
@@ -370,6 +383,17 @@ function History({ userData }) {
                 </div> : " "}
 
 
+              <div className='text-white text-center mt-2  item  justify-content-end row align-content-center'>
+
+                <Link className="btn btn-success col-2 details" onClick={() => {
+                  openUpdate[el._id] ?
+                    setOpenUpdate({ ...openUpdate, [el._id]: false })
+                    :
+                    setOpenUpdate({ ...openUpdate, [el._id]: true })
+                }}>
+                  {openUpdate[el._id] ? "close" : "update"}</Link>
+
+              </div>
 
               <div className='text-white text-center mt-2  item  justify-content-end row align-content-center'>
 
@@ -391,6 +415,8 @@ function History({ userData }) {
 
 
             </div>
+
+            {/* quantity discount inchPrice*/}
             {/* table */}
             {orderDetails[el._id] ?
 
@@ -398,7 +424,7 @@ function History({ userData }) {
                 {/* head table */}
                 <div className='py-2 text-white  h6  bg-danger  item justify-content-between align-item-center row'>
                   <span className=' pt-2 col-3 text-center  border-end'>ID</span>
-                  <span className=' p-2 col-1   border-end'>Name</span>
+                  <span className=' p-2 col-1  border-end'>Name</span>
                   <span className=' p-2 col-1  border-end'>Price unit</span>
                   <span className=' p-2 col-1  border-end'>Discount</span>
                   <span className=' p-2 col-1  border-end'>Price unit after discount</span>
@@ -418,10 +444,13 @@ function History({ userData }) {
                       <span className='p-2 col-1 text-center border-end'>{product.name}</span>
                       <span className='p-2 col-1 text-center border-end'>{(product?.discount || 0) + product.unitPrice}</span>
 
-                      <span className='p-2 col-1 text-center border-end'>{product.discount}</span>
+                      <span className='p-2 col-1 text-center border-end'>{product.discount} <FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                      
                       <span className='p-2 col-1 text-center border-end'>{product.unitPrice}</span>
-                      <span className='p-2 col-1 text-center border-end'>{product.quantity}</span>
-                      <span className='p-2 col-1 text-center border-end'>{(product?.inchPrice || "______")}</span>
+                      <span className='p-2 col-1 text-center border-end'>{product.quantity}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                      
+                      <span className='p-2 col-1 text-center border-end'>{(product?.inchPrice || "______")}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                   
                       <span className='p-2 col-1'>{product.finalPrice}</span>
                       <span className="py-2 col-1 text-center rounded-5">
                         <Link to={`http://localhost:3000/product/${product.productId}`}>

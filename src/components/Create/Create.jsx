@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './Create.css';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 /* import ResizeObserver from 'resize-observer-polyfill'; */
 import joi from 'joi';
@@ -252,19 +252,20 @@ function Create() {
         status: joi.string().valid('صافي', 'ليه فلوس', 'عليه فلوس').default('صافي'),
       })
 
-    }])
+    }
+  ])
 
 
   const headers = {
     "authorization": `Min@__${localStorage.getItem("token")}`
   }
 
+
   useEffect(() => {
     handleIds()
     getIdsData()
     setDataDisplay({ ...freshData })
   }, [formName]);
-
 
 
   useEffect(() => {
