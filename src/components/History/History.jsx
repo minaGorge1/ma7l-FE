@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import './History.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-
+import Select from 'react-select';
 function History({ userData }) {
   //order came from db
   const [orders, setOrders] = useState([])
@@ -16,6 +16,10 @@ function History({ userData }) {
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
+
+  //status 
+  const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
+
 
   const headers = {
     "authorization": `Min@__${localStorage.getItem("token")}`
@@ -87,6 +91,7 @@ function History({ userData }) {
     }
   }
 
+  /* get all customers */
   async function getDateCustomer() {
 
     try {
@@ -108,6 +113,18 @@ function History({ userData }) {
       setError(error.response.data.message);
     }
   }
+
+  //update customer
+  const handleSearchCus = (value) => {
+    setNewData(prevOrder => ({ ...prevOrder, customerId: value?.value || " " }))
+  };
+
+  //customer name
+  const options = customers ? customers.map((el) => ({
+    value: el._id, // id
+    label: el.name, //  aly bizhr
+  })) : [];
+
 
 
   async function update(id) {
@@ -147,8 +164,15 @@ function History({ userData }) {
             className={` p-2 rounded-3 bg-black opacity-75 my-3`}>
 
             <div className="p-1 fs-5 text-white item justify-content-between align-item-center row mb-2">
+
+              {/* id order */}
+              <div>
+                <span className="py-2 col-2 text-center opacity-50">id :&nbsp; &nbsp;</span>
+                <span className="py-2 col-2 text-center text-danger">{el._id}</span>
+              </div>
+
               {/* time */}
-              <div className="justify-content-between align-item-center row">
+              <div className="justify-content-between align-item-center row mb-1">
                 <span className='col-5'>
                   <span className="py-2 col-2 text-center opacity-50">Time :&nbsp; &nbsp;</span>
                   <span className="py-2 col-2 text-center">{el.time}</span>
@@ -156,13 +180,13 @@ function History({ userData }) {
 
 
                 {userData.role === "Admin" ?
-                  <span className="col-7 justify-content-between align-item-center row mb-1">
+                  <span className="col-7 justify-content-between align-item-center row ">
 
                     <span className='col-6'>
                       <input className='' onChange={(el) => {
                         setNewData((prevData) => ({
                           ...prevData,
-                          time: el.target?.value
+                          time: el.target?.value || null
                         }));
                       }}
                         type="text" />
@@ -175,8 +199,9 @@ function History({ userData }) {
                   </span> : " "
                 }
               </div>
+
               {/* date */}
-              <div className="justify-content-between align-item-center row">
+              <div className="justify-content-between align-item-center row mb-1">
                 <span className='col-5'>
                   <span className="py-2 col-5 text-center opacity-50">Date :&nbsp; &nbsp;</span>
                   <span className="py-2 col-5 text-center">{el.date}</span>
@@ -189,7 +214,7 @@ function History({ userData }) {
                       <input className='' onChange={(el) => {
                         setNewData((prevData) => ({
                           ...prevData,
-                          date: el.target?.value
+                          date: el.target?.value || null
                         }));
                       }}
                         type="text" />
@@ -202,21 +227,40 @@ function History({ userData }) {
                 }
 
               </div>
-              {/* id order */}
-              <div>
-                <span className="py-2 col-2 text-center opacity-50">id :&nbsp; &nbsp;</span>
-                <span className="py-2 col-2 text-center text-danger">{el._id}</span>
-              </div>
+
               {/* customer */}
-              <div>
-                <span className="py-2 col-1 text-center opacity-50">customer :&nbsp; &nbsp;</span><span className="py-2 col-2 text-center">
-                  {el.customerId
-                    ? customers?.find((cus) => cus._id === el.customerId).name
-                    : "none"}
+              <div className="justify-content-between align-item-center row my-2">
+
+                <span className='col-5'>
+                  <span className="py-2 col-1 text-center opacity-50">customer :&nbsp; &nbsp;</span>
+                  <span className="py-2 col-2 text-center">
+                    {el.customerId
+                      ? customers?.find((cus) => cus._id === el.customerId)?.name
+                      : "none"}
+                  </span>
                 </span>
+
+
+                <span className="col-7 justify-content-between align-item-center row ">
+                  <Select
+                    className="search-dropdown text-black col-8 "
+                    /*  value={customerName} */
+                    onChange={() => {
+                      handleSearchCus()
+                      /* update(el._id) */
+                    }}
+                    options={options}
+                  />
+
+                  <span className='col-3 '>
+                    <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
+                  </span>
+
+                </span>
+
               </div>
               {/* note */}
-              <div className="justify-content-between align-item-center row">
+              <div className="justify-content-between align-item-center row mb-1">
                 <span className='col-5'>
                   <span className="py-2 col-1 text-center opacity-50">note :&nbsp; &nbsp;</span>
                   <span className="py-2 col-2 text-center">{el?.note || "empty"}</span>
@@ -243,9 +287,41 @@ function History({ userData }) {
 
               </div>
               {/* status */}
-              <div>
-                <span className="py-2 col-1 text-center opacity-50">status :&nbsp; &nbsp;</span>
-                <span className="py-2 col-2 text-center">{el.status}</span>
+              <div className="justify-content-between align-item-center row mb-1">
+
+                <span className='col-5'>
+                  <span className="py-2 col-1 text-center opacity-50">status :&nbsp; &nbsp;</span>
+                  <span className="py-2 col-2 text-center">{el.status}</span>
+                </span>
+                <span className='justify-content-between align-item-between row col-7'>
+
+                  <span className=" col-6 dropdown">
+                    <span className="nav-item dropdown btn btn-outline-primary">
+                      <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {!NewData?.status ? el.status : (NewData?.status || "Dropdown")}
+                      </Link>
+                      <ul className="dropdown-menu">
+                        {status.map((item, k) => (
+                          <button key={k} onClick={(e) => {
+                            setNewData({ ...NewData, status: item });
+                          }}
+                            className="dropdown-item w-75 d-block text-start mx-3">
+                            {item}
+                          </button>
+                        ))}
+                      </ul>
+                    </span>
+
+                  </span>
+                  <span className='col-6 '>
+                    <button className='btn btn-primary' onClick={() => { update(el._id) }}> update</button>
+                  </span>
+                </span>
+
+
+
+
+
               </div>
 
               <div>
@@ -295,7 +371,7 @@ function History({ userData }) {
 
 
 
-              <div className='text-white text-center   item  justify-content-end row align-content-center'>
+              <div className='text-white text-center mt-2  item  justify-content-end row align-content-center'>
 
                 <Link className="btn btn-primary col-2 details" onClick={() => {
                   orderDetails[el._id] ?
