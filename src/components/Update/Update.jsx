@@ -35,7 +35,7 @@ function Update({ userData }) {
 
 
   //objects to undisplayed from result to display data
-  const [display, setDisplay] = useState(["category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted", "status"])
+  const [display, setDisplay] = useState(["_id", "category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted", "status"])
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -249,7 +249,7 @@ function Update({ userData }) {
 
 
             {userData.role === "Admin" ? <>
-              <span className='col-5'> Key: {key},&nbsp; Value:  {values[key]} </span>
+              <span className='col-5'> {key}&nbsp; : &nbsp; {values[key]} </span>
               <span className='col-2'>New {key} :</span>
 
               <input className=' col-3 ' onChange={(el) => {
@@ -279,7 +279,7 @@ function Update({ userData }) {
             </> : ""}
 
             {userData.role === "Admin" ? <>
-              <span className='col-5'> Key: {key},&nbsp; Value: {result.details[key]} </span>
+              <span className='col-5'>  {key}&nbsp; : &nbsp; {result.details[key]} </span>
               <span className='col-2'>New {key} :</span>
 
               <input className=' col-3 ' onChange={(el) => {
@@ -308,7 +308,7 @@ function Update({ userData }) {
             </> : ""}
 
             {userData.role === "Admin" ? <>
-              <span className='col-5'> Key: {key} ,&nbsp; Name: {ownedIds[key]?.name}</span>
+              <span className='col-5'>  {key} &nbsp; : &nbsp;{ownedIds[key]?.name}</span>
               <span className='col-2'>New {key} :</span>
 
               <div className=" dropdown col-2">

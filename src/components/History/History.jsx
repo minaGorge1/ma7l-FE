@@ -156,7 +156,7 @@ function History({ userData }) {
 
 
   return <div className="History my-5 pb-2">
-    History Component
+    {/* History Component */}
 
 
     <div className="justify-content-between align-item-center row">
@@ -445,12 +445,12 @@ function History({ userData }) {
                       <span className='p-2 col-1 text-center border-end'>{(product?.discount || 0) + product.unitPrice}</span>
 
                       <span className='p-2 col-1 text-center border-end'>{product.discount} <FontAwesomeIcon icon={['fas', 'edit']} /></span>
-                      
+
                       <span className='p-2 col-1 text-center border-end'>{product.unitPrice}</span>
                       <span className='p-2 col-1 text-center border-end'>{product.quantity}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
-                      
+
                       <span className='p-2 col-1 text-center border-end'>{(product?.inchPrice || "______")}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
-                   
+
                       <span className='p-2 col-1'>{product.finalPrice}</span>
                       <span className="py-2 col-1 text-center rounded-5">
                         <Link to={`http://localhost:3000/product/${product.productId}`}>

@@ -8,7 +8,9 @@ function MissingProducts() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [search, setSearch] = useState(false)
   const [title, setTitle] = useState("")
+  const [num, setNum] = useState("30")
   const [product, setProduct] = useState([]);
   const [disProduct, setDisProduct] = useState([]);
 
@@ -19,11 +21,11 @@ function MissingProducts() {
 
 
   useEffect(() => {
-   /*  setLoading(true); */
+    /*  setLoading(true); */
     getIdsData().then(() => {
-        /* getDate().then(() => {
-         setLoading(false);
-       });  */
+      /* getDate().then(() => {
+       setLoading(false);
+     });  */
     });
   }, []);
 
@@ -31,7 +33,7 @@ function MissingProducts() {
   useEffect(() => {
     if (product.length > 0 && product[0].brand) {
 
-      
+
 
       setDisProduct(product);
 
@@ -71,10 +73,11 @@ function MissingProducts() {
     }
   }
 
-  async function getDate(title = "657c656b1935a2a5ad47c237", num = 30) {
+  async function getDate() {
 
     try {
       setTitle(title)
+      setNum(num)
       setLoading(true)
       let api = `http://127.0.0.1:5000/product?stock[lt]=${num}&titleId=${title}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
@@ -91,14 +94,13 @@ function MissingProducts() {
         } */
         return await processElement(el);
       }));
-      if (prosesData ) {
+      if (prosesData) {
         setProduct(() => {
           return [...prosesData]
         });
       } else {
         setProduct([])
       }
-      console.log(product);
       setLoading(false)
     } catch (error) {
       setError(error.response.data.message);
@@ -122,11 +124,11 @@ function MissingProducts() {
   }
 
 
-  return <div className="MissingProducts counter mb-5">
+  return <div className="MissingProducts counter my-5">
     {/*  MissingProducts Component */}
 
 
-    <div className='m-4 justify-content-between align-item-center row'>
+    <div className='m-4 justify-content-between align-item-center row '>
 
       <div className='col-5 fs-4 justify-content-center align-item-center row'>
         <span className='col-2 fs-4'>title :</span>
@@ -138,7 +140,10 @@ function MissingProducts() {
               </Link>
               <ul className="dropdown-menu">
                 {idsData.title?.map((e, Key) => (
-                  <button key={Key} onClick={() => getDate(e.id)}
+                  <button key={Key} onClick={() => {
+                    setTitle(e.id);
+                  }
+                  }
                     className="dropdown-item w-75 d-block text-start mx-3">
                     {e.name}
                   </button>
@@ -150,82 +155,111 @@ function MissingProducts() {
       </div>
 
       <div className='col-5 fs-4'>
-        <span className=' fs-4'>num : &nbsp;</span>
+        <span className=' fs-4'>number : &nbsp;</span>
         <span className=' fs-4'>
-          <input onClick={(e) => getDate(title, e.target.value)} type="number" name="" id="" />
+          <input onClick={(e) => setNum(e?.target.value)}
+            placeholder={num}
+            type="number" name="" id="" />
         </span>
+      </div>
+
+      <div className='col-2'>
+
+        <button
+          onClick={() => {
+            getDate();
+            setSearch(true);
+          }}
+          className={title ? "btn btn-primary" : "btn btn-primary disabled"}
+        >
+          Search
+        </button>
+
       </div>
 
     </div>
 
     {/* table */}
-    <div className=''>
+    {search ?
+      <div className=''>
 
-      {/* table info */}
-      <div>
+        {/* table info */}
+        <div>
 
-        <div className='py-2 text-white h6 bg-black  text item justify-content-between align-item-center row'>
-          <span className='py-2 col-1 text-center '>Name</span>
-          <span className='py-2 col-1 text-center '>Type</span>
-          <span className='py-2 col-1 text-center '>Title</span>
-          <span className='py-2 col-1 text-center '>category</span>
-          <span className='py-2 col-2 text-center '>subcategory</span>
-          <span className='py-2 col-1 text-center '>brand</span>
-          <span className='py-2 col-1 text-center '>Final Price</span>
-          <span className='py-2 col-1 text-center '>Real Price</span>{/*  admin */}
-          <span className='py-2 col-1 text-center rounded-5'>Stock</span>
-          <span className='py-2 col-1 text-center rounded-5'></span>
-          <span className='py-2 col-1 text-center rounded-5'></span>
+          <div className='py-2 text-white h6 bg-black  text item justify-content-between align-item-center row'>
+            <span className='py-2 col-1 text-center '>Name</span>
+            <span className='py-2 col-1 text-center '>Type</span>
+            <span className='py-2 col-1 text-center '>Title</span>
+            <span className='py-2 col-1 text-center '>category</span>
+            <span className='py-2 col-2 text-center '>subcategory</span>
+            <span className='py-2 col-1 text-center '>brand</span>
+            <span className='py-2 col-1 text-center '>Final Price</span>
+            <span className='py-2 col-1 text-center '>Real Price</span>{/*  admin */}
+            <span className='py-2 col-1 text-center rounded-5'>Stock</span>
+            <span className='py-2 col-1 text-center rounded-5'></span>
+            <span className='py-2 col-1 text-center rounded-5'></span>
+          </div>
+
         </div>
+
+
+
+        {loading ? (
+          <div className="text-center">
+            <span>Loading products...</span>
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : (
+          product.length > 0 ? ([...new Set(disProduct)].map((el) => (
+
+            <div key={el._id} className="p-1">
+              <div className="p-1 fs-5 text-white bg-black opacity-75 item justify-content-between align-item-center row rounded-3">
+                <span className="py-2 col-1 text-center">{el.name}</span>
+                <span className="py-2 col-1 text-center">{el.Type}</span>
+                <span className="py-2 col-1 text-center">{el.title?.name}</span>
+                <span className="py-2 col-1 text-center">{el.category?.name}</span>
+                <span className="py-2 col-2 text-center">{el.subcategory?.name}</span>
+                <span className="py-2 col-1 text-center">{el.brand?.name}</span>
+                <span className="py-2 col-1 text-center">{el.finalPrice}</span>
+                <span className="py-2 col-1 text-center realPrice">{el.realPrice}</span>
+                <span className="py-2 col-1 text-center border-danger border-bottom-4">{el.stock}</span>
+
+                <span className="py-2 col-1 text-center rounded-5">
+                  <Link to={`http://localhost:3000/product/${el._id}`}>
+                    <button className="btn btn-success" onClick={() => { }}>
+                      data
+                    </button>
+                  </Link>
+                </span>
+
+                <span className="py-2 col-1 text-center">
+                  <Link className="btn btn-primary" to={`http://localhost:3000/update/product/${el._id}`}>
+                    Edit
+                  </Link>
+                </span>
+              </div>
+            </div>
+          ))) : (<div className='text-danger text-center p-3'>
+            <span> No products found</span>
+          </div>)
+        )}
+
 
       </div>
 
+      : <div>
+        <div className=' justify-content-center align-content-center row m-5'>
 
-
-      {loading ? (
-        <div className="text-center">
-          <span>Loading products...</span>
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
+          <div className="col-4 fs-2 mt-5">
+            <p className='text-danger'>select Title and Num</p>
           </div>
+
         </div>
-      ) : (
-        product.length > 0 ? ([...new Set(disProduct)].map((el) => (
-
-          <div key={el._id} className="p-1">
-            <div className="p-1 fs-5 text-white bg-black opacity-75 item justify-content-between align-item-center row rounded-3">
-              <span className="py-2 col-1 text-center">{el.name}</span>
-              <span className="py-2 col-1 text-center">{el.Type}</span>
-              <span className="py-2 col-1 text-center">{el.title?.name}</span>
-              <span className="py-2 col-1 text-center">{el.category?.name}</span>
-              <span className="py-2 col-2 text-center">{el.subcategory?.name}</span>
-              <span className="py-2 col-1 text-center">{el.brand?.name}</span>
-              <span className="py-2 col-1 text-center">{el.finalPrice}</span>
-              <span className="py-2 col-1 text-center realPrice">{el.realPrice}</span>
-              <span className="py-2 col-1 text-center border-danger border-bottom-4">{el.stock}</span>
-
-              <span className="py-2 col-1 text-center rounded-5">
-                <Link to={`http://localhost:3000/product/${el._id}`}>
-                  <button className="btn btn-success" onClick={() => { }}>
-                    data
-                  </button>
-                </Link>
-              </span>
-
-              <span className="py-2 col-1 text-center">
-                <Link className="btn btn-primary" to={`http://localhost:3000/update/product/${el._id}`}>
-                  Edit
-                </Link>
-              </span>
-            </div>
-          </div>
-        ))) : (<div className='text-danger text-center p-3'>
-          <span> No products found</span>
-        </div>)
-      )}
+      </div>}
 
 
-    </div>
 
   </div>
 }

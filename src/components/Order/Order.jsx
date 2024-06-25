@@ -66,27 +66,29 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     if (products.length > 0) {
       let newFinalPrice = 0;
       let profit = 0;
+      let realPrice = 0;
 
       [...new Set(productsDisplay)]?.reduce((acc, el) => {
 
         const price = el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
-        const realPrice = el.realPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+         realPrice += el.realPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+        const discount =  el?.discount * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
         acc[el.name] = price;
         newFinalPrice += price;
-        profit += price - realPrice;
-
+        profit += (price - realPrice);
         return acc;
       }, {});
 
       setFinalPrice(newFinalPrice);
 
-      setOrder((prev) => ({
-        ...prev,
+      setOrder((prevOrder) => ({
+        ...prevOrder,
         products,
-        "profitMargin": profit,
+        profitMargin: (prevOrder?.paid || newFinalPrice)  - realPrice,
 
       }));
     }
+    /* setOrder({ ...order, profitMargin: .target?.value || finalPrice }); */
   }, [products]);
 
   //REFRESH component
@@ -272,7 +274,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
 
   return (<div className="Search position-relative ">
-    Order Component
+    {/* Order Component */}
 
     {/* icon search */}
     <div className=' position-search p-4  col-12' style={{ display: isVisible ? 'block' : 'none' }} >
@@ -288,8 +290,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
         <div className="container position-fixed my-4">
 
 
-          <div className=' justify-content-center align-item-around'>
-            <div className='row justify-content-center'>
+          <div className=' justify-content-center align-item-around '>
+            <div className='row justify-content-center '>
               <input className="col-2 w-50 form-control m-1"
                 type="search"
                 placeholder="Search"

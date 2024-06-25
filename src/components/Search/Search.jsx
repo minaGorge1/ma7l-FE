@@ -61,7 +61,7 @@ function Search() {
 
 
   return (<div className="Search my-5">
-    Search Component
+    {/* Search Component */}
 
 
 

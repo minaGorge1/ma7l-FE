@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Products({ userData, addProduct }) {
 
-  
+
   let { productId } = useParams()
   let navigate = useNavigate()
   let headers = {
@@ -128,7 +128,7 @@ function Products({ userData, addProduct }) {
 
 
   //details
-  return <div className="Products container">
+  return <div className="Products container mb-5">
 
 
     <div className='  justify-content-around align-item-center'>
@@ -223,6 +223,14 @@ function Products({ userData, addProduct }) {
                   <span>description :</span> <span>{product.brand.description}</span>
                 </>
               )}
+              {userData && userData.role === "Admin" && (
+                <span className=' justify-content-end align-content-center row'>
+                  <span className='col-3'>
+                    <button className=' btn btn-primary me-2' onClick={() => { navigate(`../update/brand/${product.brand._id}`) }}> Edit brand </button>
+
+                  </span>
+
+                </span>)}
             </div>
           </div>
 
@@ -238,6 +246,14 @@ function Products({ userData, addProduct }) {
                   <span>description :</span> <span>{product.category.description}</span>
                 </>
               )}
+              {userData && userData.role === "Admin" && (
+                <span className=' justify-content-end align-content-center row'>
+                  <span className='col-3'>
+                    <button className=' btn btn-primary me-2' onClick={() => { navigate(`../update/category/${product.category._id}`) }}> Edit category </button>
+
+                  </span>
+
+                </span>)}
             </div>
           </div>
 
@@ -248,12 +264,28 @@ function Products({ userData, addProduct }) {
             <hr className='mx-3 w-75' />
             <div className='p-3 fs-5'>
               <span>subcategory name :</span> <span>{product?.subcategory?.name}</span>
-              <br />
+
               {product?.subcategory?.description && (
                 <>
+                  <br />
                   <span>description :</span> <span>{product.subcategory.description}</span>
                 </>
               )}
+
+              {product?.subcategory?.details?.inchPrice && (
+                <>
+                  <br />
+                  <span>inch Price :</span> <span>{product.subcategory?.details?.inchPrice} El</span>
+                </>
+              )}
+              {userData && userData.role === "Admin" && (
+                <span className=' justify-content-end align-content-center row'>
+                  <span className='col-3'>
+                    <button className=' btn btn-primary me-2' onClick={() => { navigate(`../update/subcategory/${product.subcategory._id}`) }}> Edit subcategory </button>
+
+                  </span>
+
+                </span>)}
             </div>
           </div>
 
