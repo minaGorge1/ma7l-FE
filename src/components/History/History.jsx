@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
 import './History.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Select from 'react-select';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/fontawesome-free-solid';
+import moment from 'moment/moment';
+
 function History({ userData }) {
+
+
+  const now = new Date();
+  /* const hours = now.getHours();
+  const time = `${hours > 12 ? hours - 12 : hours} : ${now.getMinutes()} ${hours >= 12 ? 'PM' : 'AM'}`; */
+  const dateNow = moment(now).format('DD-MM-YYYY');
+
+
   //order came from db
   const [orders, setOrders] = useState([])
 
-  //customer came from db
+  //customer came from db 
   const [customers, setCustomers] = useState([])
 
   //to show or hide details order
@@ -21,6 +34,14 @@ function History({ userData }) {
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
+
+  //search by customer name 
+  const [cusId, setCusId] = useState("");
+
+  //startDate 
+  const [startDate, setStartDate] = useState(dateNow);
+ 
+
 
   //status 
   const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
@@ -33,12 +54,9 @@ function History({ userData }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const now = new Date();
-  const hours = now.getHours();
-  const time = `${hours > 12 ? hours - 12 : hours} : ${now.getMinutes()} ${hours >= 12 ? 'PM' : 'AM'}`;
-  const date = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()}`;
 
-  console.log(`${time} ${date}`)
+
+  /*   console.log(`${time} ${dateNow}`) */
 
   useEffect(() => {
     getDate()
@@ -47,6 +65,7 @@ function History({ userData }) {
 
 
   }, []);
+
   /* userId: { type: Types.ObjectId, ref: "User", required: true },
   customerId: { type: Types.ObjectId, ref: "Customer" },
   products: [{
@@ -70,13 +89,16 @@ function History({ userData }) {
 
   async function getDate() {
 
+    const api = cusId
+      ? `http://127.0.0.1:5000/order?customerId=${cusId}&isDeleted=false`
+      : `http://127.0.0.1:5000/order?date=${startDate}&isDeleted=false`;
+
     try {
 
       setLoading(true)
-      let api = `http://127.0.0.1:5000/order?date=${date}&isDeleted=false`
+
       const { message, ...resultData } = (await axios.get(api)).data;
 
-      console.log(resultData);
       if (await message === "Done" & resultData.order.length > 0) {
 
         setOrders(() => {
@@ -88,7 +110,11 @@ function History({ userData }) {
         )
 
         setOpenUpdate(() =>
-          resultData.order.reduce((acc, el) => ({ ...acc, [el._id]: false }), {}))
+          resultData.order.reduce((acc, el) => ({
+            ...acc, [el._id]: false,
+            ...el.products.reduce((prodAcc, pro) => ({ ...prodAcc, [pro._id]: false })
+              , {})
+          }), {}))
 
       } else {
         setOrders([])
@@ -109,7 +135,6 @@ function History({ userData }) {
       let api = `http://localhost:5000/customer?isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
 
-      console.log(resultData);
       if (await message === "Done" & resultData.customer.length > 0) {
 
         setCustomers(() => {
@@ -124,8 +149,7 @@ function History({ userData }) {
   }
 
   //update customer
-  const handleSearchCus = (value) => {
-    console.log(value);
+  const handleSearchUpdateCus = (value) => {
     setNewData(prevOrder => ({ ...prevOrder, customerId: value?.value || " " }))
   };
 
@@ -140,10 +164,8 @@ function History({ userData }) {
   async function update(id) {
 
     try {
-      console.log(NewData);
       let api = `http://127.0.0.1:5000/order/${id}/update`
       const { data } = await axios.put(api, NewData, { headers })
-      console.log(data);
       if (data.message === "Done") {
         getDate()
       }
@@ -153,13 +175,87 @@ function History({ userData }) {
 
   }
 
+  async function deleteOrder(id) {
+
+    try {
+      let api = `http://127.0.0.1:5000/order/cancel/${id}`
+      const { data } = await axios.patch(api, null, { headers })
+      if (data.message === "Done") {
+        getDate()
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+
+  }
+
+  const handleSearchCus = (value) => {
+    setCusId(value.value)
+
+  };
 
 
   return <div className="History my-5 pb-2">
     {/* History Component */}
 
 
-    <div className="justify-content-between align-item-center row">
+    <div className="justify-content-between container align-item-center row">
+
+
+
+      <div className="justify-content-around container align-item-center row mb-3">
+        <div className='row '>
+
+          {/* custmer name */}
+          <div className='  row py-2 col-6 border-end border-black mx-5'>
+
+            <div className='col-3'><span>customer: </span></div>
+
+            <Select
+              className="search-dropdown col-8"
+              /*  value={customerName} */
+              onChange={handleSearchCus}
+              options={options}
+            />
+
+
+          </div>
+
+          {/* {date}*/}
+          <div className='py-2 col-4 align-item-center justify-content-around '>
+            <div className='row  '>
+              <span className='col-3'>date: </span>
+              <span className='col-9' >
+
+                <DatePicker
+                  className='form-control text-center'
+                  /* value={} */
+                  placeholderText={startDate}
+                  onChange={(date) => {
+                    setStartDate(moment(date).format('DD-MM-YYYY'));
+                  }}
+                  dateFormat="dd-MM-yyyy"
+                  format="dd-MM-yyyy"
+                />
+
+              </span>
+
+            </div>
+
+          </div>
+
+          <div className='justify-content-end container align-item-center row my-2'>
+            <button className="col-2 btn btn-success"
+             type="submit"
+             onClick={()=>{ getDate() }}
+             >refresh</button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <hr />
       {loading ? (
         <div className="text-center">
           <span>Loading products...</span>
@@ -168,6 +264,7 @@ function History({ userData }) {
           </div>
         </div>
       ) : (
+
         orders.length > 0 ? ([...new Set(orders)].map((el) => (
 
           <div key={el._id}
@@ -255,7 +352,7 @@ function History({ userData }) {
                     <Select
                       className="search-dropdown text-black col-8 "
                       /*  value={customerName} */
-                      onChange={handleSearchCus}
+                      onChange={handleSearchUpdateCus}
                       options={options}
                     />
 
@@ -343,45 +440,51 @@ function History({ userData }) {
                 <span className='col-1 ps-4 py-1 fs-4 realPrice'>{el.profitMargin}</span>
               </div>
 
-              {!orderDetails[el._id] ?
-                <div>
-                  {/* Final Prise */}
-                  <div>
-                    <span className="py-2 col-1 text-center opacity-50">Final Prise :</span>
-                    <span className='col-1 ps-4 py-1 fs-4 '>{el.finalPrice}</span>
-                  </div>
-                  {/* paid */}
-                  <div className="justify-content-between align-item-center row">
+              {/* Final Prise */}
+              <div>
+                <span className="py-2 col-1 text-center opacity-50">Final Prise :</span>
+                <span className='col-1 ps-4 py-1 fs-4 '>{el.finalPrice}</span>
+              </div>
 
-                    <span className='col-5'>
-                      <span className="py-2 col-1 text-center opacity-50">Paid :</span>
-                      <span className='col-1 ps-4 py-1 fs-4 '>{el.paid}</span>
+              {/* paid */}
+              <div className="justify-content-between align-item-center row">
+
+                <span className='col-5'>
+                  <span className="py-2 col-1 text-center opacity-50">Paid :</span>
+                  <span className='col-1 ps-4 py-1 fs-4 '>{el.paid}</span>
+                </span>
+
+                {userData.role === "Admin" && openUpdate[el._id] ?
+                  <span className="col-7 justify-content-between align-item-center row">
+
+                    <span className='col-6'>
+                      <input className='' onChange={(el) => {
+                        setNewData((prevData) => ({
+                          ...prevData,
+                          paid: el.target?.value
+                        }));
+                      }}
+                        type="text" />
+
                     </span>
 
-                    {userData.role === "Admin" && openUpdate[el._id] ?
-                      <span className="col-7 justify-content-between align-item-center row">
+                    <span className='col-6 '>
+                      <button className='btn btn-primary ' onClick={() => { update(el._id) }}> update</button> </span>
+                  </span>
+                  : " "
+                }
 
-                        <span className='col-6'>
-                          <input className='' onChange={(el) => {
-                            setNewData((prevData) => ({
-                              ...prevData,
-                              paid: el.target?.value
-                            }));
-                          }}
-                            type="text" />
+              </div>
 
-                        </span>
+              <div className='text-white text-center mt-2  item  justify-content-end row align-content-center'>
 
-                        <span className='col-6 '>
-                          <button className='btn btn-primary ' onClick={() => { update(el._id) }}> update</button> </span>
-                      </span>
-                      : " "
-                    }
+                <Link className="btn btn-danger col-2 details" onClick={() => {
+                  deleteOrder(el._id)
+                }}
+                >
+                  delete</Link>
 
-
-                  </div>
-                </div> : " "}
-
+              </div>
 
               <div className='text-white text-center mt-2  item  justify-content-end row align-content-center'>
 
@@ -444,12 +547,123 @@ function History({ userData }) {
                       <span className='p-2 col-1 text-center border-end'>{product.name}</span>
                       <span className='p-2 col-1 text-center border-end'>{(product?.discount || 0) + product.unitPrice}</span>
 
-                      <span className='p-2 col-1 text-center border-end'>{product.discount} <FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                      <span className='p-2 col-1 text-center border-end'>
+                        <span>{product.discount}</span>
+                        &nbsp; &nbsp;
+                        <FontAwesomeIcon icon={['fas', 'edit']} className='icon-edit'
+                          onClick={() => {
+                            openUpdate[product.productId] ?
+                              setOpenUpdate({ ...openUpdate, [product.productId]: false })
+                              :
+                              setOpenUpdate({ ...openUpdate, [product.productId]: true })
+                          }}
+                        />
+                        {userData.role === "Admin" && openUpdate[product.productId] ?
+                          <span className="col-12 justify-content-center align-item-center row bg-black">
+
+                            <span className='p-2 col-10 text-center rounded-5'>
+                              <input className='w-100'
+                                placeholder='new discount'
+                                onChange={(el) => {
+                                  let products = [{
+                                    productId: product.productId,
+                                    discount: el.target?.value,
+                                  }]
+                                  setNewData((prevData) => ({
+                                    ...prevData,
+                                    products
+                                  }))
+                                }}
+                                type="text" />
+
+                            </span>
+
+
+                          </span>
+                          : " "
+                        }
+                      </span>
 
                       <span className='p-2 col-1 text-center border-end'>{product.unitPrice}</span>
-                      <span className='p-2 col-1 text-center border-end'>{product.quantity}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                      <span className='p-2 col-1 text-center border-end'>
+                        <span> {product.quantity}</span>
+                        &nbsp; &nbsp;
+                        <FontAwesomeIcon icon={['fas', 'edit']} className='icon-edit'
+                          onClick={() => {
+                            openUpdate[product.productId] ?
+                              setOpenUpdate({ ...openUpdate, [product.productId]: false })
+                              :
+                              setOpenUpdate({ ...openUpdate, [product.productId]: true })
+                          }}
+                        />
+                        {userData.role === "Admin" && openUpdate[product.productId] ?
+                          <span className="col-12 justify-content-center align-item-center row bg-black">
 
-                      <span className='p-2 col-1 text-center border-end'>{(product?.inchPrice || "______")}<FontAwesomeIcon icon={['fas', 'edit']} /></span>
+                            <span className='p-2 col-10 text-center rounded-5'>
+                              <input className='w-100'
+                                placeholder='new qua'
+                                onChange={(el) => {
+                                  let products = [{
+                                    productId: product.productId,
+                                    quantity: el.target?.value,
+                                  }]
+                                  setNewData((prevData) => ({
+                                    ...prevData,
+                                    products
+                                  }))
+                                }}
+                                type="text" />
+
+                            </span>
+
+
+                          </span>
+                          : " "
+                        }
+                      </span>
+
+                      <span className='p-2 col-1 text-center border-end'>
+                        <span> {(product?.inchPrice || "______")}</span>
+                        &nbsp; &nbsp;
+                        {(product?.inchPrice ?
+                          <span>
+                            <FontAwesomeIcon icon={['fas', 'edit']} className='icon-edit'
+                              onClick={() => {
+                                openUpdate[product.productId] ?
+                                  setOpenUpdate({ ...openUpdate, [product.productId]: false })
+                                  :
+                                  setOpenUpdate({ ...openUpdate, [product.productId]: true })
+                              }}
+                            />
+                            {userData.role === "Admin" && openUpdate[product.productId] ?
+                              <span className="col-12 justify-content-center align-item-center row bg-black">
+
+                                <span className='p-2 col-10 text-center rounded-5'>
+                                  <input className='w-100'
+                                    placeholder='new inchPrice'
+                                    onChange={(el) => {
+                                      let products = [{
+                                        productId: product.productId,
+                                        inchPrice: el.target?.value,
+                                      }]
+                                      setNewData((prevData) => ({
+                                        ...prevData,
+                                        products
+                                      }))
+                                    }}
+                                    type="text" />
+
+                                </span>
+
+
+                              </span>
+                              : " "
+                            }
+                          </span>
+
+                          : " ")}
+
+                      </span>
 
                       <span className='p-2 col-1'>{product.finalPrice}</span>
                       <span className="py-2 col-1 text-center rounded-5">
@@ -458,6 +672,14 @@ function History({ userData }) {
                             data
                           </button>
                         </Link>
+                        <br />
+                        <br />
+                        {userData.role === "Admin" && openUpdate[product.productId] ?
+                          <span className='py-2 col-1 text-center rounded-5'>
+                            <button className='btn btn-primary ' onClick={() => { update(el._id) }}> update</button>
+                          </span>
+                          : " "
+                        }
                       </span>
 
                     </div>

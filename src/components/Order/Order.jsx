@@ -59,6 +59,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   useEffect(() => {
     refData()
     getIdsData()
+    console.log(products);
+    console.log(productsDisplay);
   }, []);
 
 
@@ -71,8 +73,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       [...new Set(productsDisplay)]?.reduce((acc, el) => {
 
         const price = el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
-         realPrice += el.realPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
-        const discount =  el?.discount * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+        realPrice += el.realPrice * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
+        const discount = el?.discount * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0);
         acc[el.name] = price;
         newFinalPrice += price;
         profit += (price - realPrice);
@@ -84,7 +86,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       setOrder((prevOrder) => ({
         ...prevOrder,
         products,
-        profitMargin: (prevOrder?.paid || newFinalPrice)  - realPrice,
+        profitMargin: (prevOrder?.paid || newFinalPrice) - realPrice,
 
       }));
     }
@@ -551,6 +553,17 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                   {el.finalPriceUnit =
                     Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]  //lw md5l s3r al inch
                       : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")} {/* lw mad5lsh s3r al inch */}
+                  {/* {setProducts(prev => {
+                    const index = prev.findIndex(item => item.productId === el._id);
+                    if (index !== -1) {
+                      const newArray = [...prev];
+                      newArray[index].unitPrice = el.finalPriceUnit;
+                      return newArray;
+                    } else {
+                      return prev;
+                    }
+                  }) 
+                  }*/}
                 </span>
                 :
                 <span className=' py-2 text-center col-1 border-end'>
@@ -689,13 +702,14 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                         const index = prev.findIndex(item => item.productId === el._id);
                         if (index !== -1) {
                           const newArray = [...prev];
-                          e.target.value ? newArray[index].inchPrice = e.target.value
+                          e.target?.value ? newArray[index].inchPrice = e.target.value
                             : newArray[index].inchPrice = el.subcategory.details.inchPrice
                           /*  newArray[index].inchPrice = e.target.value || el?.subcategory.details?.inchPrice; */
                           return newArray;
                         } else {
                           return prev;
                         }
+                        /*  {...prev ,inchPrice : newArray} */
                       });
 
                       setProductsDisplay(prev => {

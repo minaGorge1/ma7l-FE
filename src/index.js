@@ -8,8 +8,9 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the styles (important)
 import 'resize-observer-polyfill';
-
-
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
