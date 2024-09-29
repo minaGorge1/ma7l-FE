@@ -33,41 +33,41 @@ function Home() {
           <hr />
           <div className='container align-content-center'>
             <div className='row justify-content-around'>
-            {titles?.map((title, index) => (
+              {titles?.map((title, index) => (
 
-              <div className="list-unstyled nav-item dropdown  col-5" key={index}>
-                <Link className=" btn btn-outline-dark p-2 my-2 mx-3 w-100 fs-4 dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  {title.name}
-                </Link>
-                
-                <div className='position-relative '>
-                <ul className="dropdown-menu w-75 ">
-                  {title.category?.map((category) => (
-                    
-                    <Link
-                      className="dropdown-item w-75 d-block text-start mx-3"
-                      to={'/categorydetils/' + category._id  }
-                      key={category._id}
-                    >
-                      {category.name}
-                    </Link> 
-                  ))}
-                  
-                </ul>
-                </div>
+                <div className="list-unstyled nav-item dropdown  col-5" key={index}>
+                  <Link className=" btn btn-outline-dark p-2 my-2 mx-3 w-100 fs-4 dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {title.name}
+                  </Link>
+
+                  <div className='position-relative '>
+                    <ul className="dropdown-menu w-75 ">
+
+                      {title.category && title.category.filter(category => !category.isDeleted).map((category) => (
+                        <Link
+                          className="dropdown-item w-75 d-block text-start mx-3"
+                          to={`/categorydetils/${category._id}`}
+                          key={category._id}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+
+                    </ul>
+                  </div>
                 </div>
 
-            ))}
+              ))}
+            </div>
           </div>
+
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p>Error: {error}</p>
+          ) : null}
+
         </div>
-
-        {loading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p>Error: {error}</p>
-        ) : null}
-
-      </div>
       </div>
     </div>
   );

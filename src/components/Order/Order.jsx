@@ -59,8 +59,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   useEffect(() => {
     refData()
     getIdsData()
-    console.log(products);
-    console.log(productsDisplay);
   }, []);
 
 
@@ -261,6 +259,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
     try {
       /*  setOrder(prevOrder => ({ ...prevOrder, "ProfitMargin":  })) */
+      
       let api = `http://127.0.0.1:5000/order/create`
       const { data } = await axios.post(api, order, { headers });
       if (data.message === "Done") {
@@ -551,7 +550,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
               {el.subcategory?.details?.inchPrice ? //lw siwr
                 <span className=' py-2 text-center col-1 border-end'>
                   {el.finalPriceUnit =
-                    Math.round(el.inchPrice ? el.inchPrice * el.name.split("*")[0]  //lw md5l s3r al inch
+                    Math.ceil(el.inchPrice ? el.inchPrice * el.name.split("*")[0]  //lw md5l s3r al inch
                       : el.subcategory.details.inchPrice * el.name.split("*")[0]) - (el?.discount || "0")} {/* lw mad5lsh s3r al inch */}
                   {/* {setProducts(prev => {
                     const index = prev.findIndex(item => item.productId === el._id);

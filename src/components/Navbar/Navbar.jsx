@@ -66,11 +66,19 @@ export default function Navbar({ userData, logout }) {
                 <li className="nav-item">
                   <Link className="nav-link active" aria-current="page" to="home" >Home</Link>
                 </li>
+
                 <li className="nav-item">
                   {userData.role === "Admin" ? <>
                     <Link className="nav-link" to="create">Create</Link>
                   </> : null}
                 </li>
+
+                <li className="nav-item">
+                  {userData.role === "Admin" ? <>
+                    <Link className="nav-link" to="dayincome">Day Income</Link>
+                  </> : null}
+                </li>
+
 
                 <li className="nav-item">
                   <Link className="nav-link" to="Search">Search</Link>

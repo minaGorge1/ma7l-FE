@@ -13,6 +13,7 @@ import Search from './components/Search/Search';
 import Create from './components/Create/Create';
 import Order from './components/Order/Order';
 import History from './components/History/History'
+import DayIncome from './components/dayIncome/dayIncome'
 import MissingProducts from './components/MissingProducts/MissingProducts'
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
@@ -88,7 +89,8 @@ function App() {
           <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
           <Route path="order" element={<ProtectedRoute><Order arrayProducts={arrayProducts} addProduct={addProduct} deleteProduct={deleteProduct} /></ProtectedRoute>} />
 
-          <Route path="History" element={<ProtectedRoute><History userData={userData}/></ProtectedRoute>} />
+          <Route path="history" element={<ProtectedRoute><History userData={userData}/></ProtectedRoute>} />
+          <Route path="dayincome" element={<ProtectedRoute><DayIncome userData={userData}/></ProtectedRoute>} />
           <Route path="missingproducts" element={<ProtectedRoute><MissingProducts /></ProtectedRoute>} />
 
           <Route path="login" element={<Login saveUserData={saveUserData} />} />
