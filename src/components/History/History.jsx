@@ -166,10 +166,14 @@ function History({ userData }) {
     try {
       let api = `http://127.0.0.1:5000/order/${id}/update`
       const { data } = await axios.put(api, NewData, { headers })
+     
+      
       if (data.message === "Done") {
         getDate()
+        console.log(data);
       }
     } catch (error) {
+      console.log(error.response.data.message);
       setError(error.response.data.message);
     }
 

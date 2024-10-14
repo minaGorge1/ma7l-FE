@@ -129,8 +129,8 @@ function Update({ userData }) {
   //get data ids all and wanted
   async function getIdsData(key, id) {
     try {
-      let apiAll = `http://127.0.0.1:5000/${key}`;
-      let apiOwned = `http://127.0.0.1:5000/${key}?_id=${id}`;
+      let apiAll = `http://127.0.0.1:5000/${key}?isDeleted=false`;
+      let apiOwned = `http://127.0.0.1:5000/${key}?_id=${id}&isDeleted=false`;
 
 
       const responseAll = await axios.get(apiAll);
