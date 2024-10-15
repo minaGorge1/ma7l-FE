@@ -18,11 +18,15 @@ function DayIncome({ userData }) {
   //income
   const [income, setIncome] = useState({});
 
-  //to show or hide details order
-  const [openUpdate, setOpenUpdate] = useState({})
+  //to show or hide details expenses
+  const [openUpdate, setOpenUpdate] = useState(false)
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
+
+  //total Money 
+ const [totalMoney, setTotalMoney] = useState(0)
+
 
   //startDate 
   const [startDate, setStartDate] = useState(dateNow);
@@ -45,6 +49,10 @@ function DayIncome({ userData }) {
       setMonyE('');
       setDescriptionE('');
       setMonyCheck("")
+      setTotalMoney(() => {
+        const totalExpenses = income.expenses.reduce((acc, expense) => acc + expense.monyE, 0);
+        return income.mony - totalExpenses;
+      })
     }
     setLoading(false);
 
@@ -267,26 +275,40 @@ function DayIncome({ userData }) {
                   <span className='col-3 fs-4'>{income.profDay}</span>
                 </ul>
                 <ul className='justify-content-between container align-item-center row my-2'>
-                  <div className="flex-container justify-content-between align-item-center my-2 border border-2 border-black rounded-2">
-                    <span className="col-3 fs-4">expenses :</span>
+                  <div className=" container my-2 border border-2 border-black rounded-2">
+                    <div className="row container justify-content-start align-item-center my-2 ">
+                      <span className="col-2 fs-4">expenses :</span>
+                      <button
+                        className='col-2 btn btn-success rounded-2'
+                        onClick={() => {!openUpdate? setOpenUpdate(true) : setOpenUpdate(false)}}
+                      >
+                        edit
+                      </button>
+                    </div>
+
                     {income.expenses ? (
                       income.expenses.map((expense, index) => (
                         <div key={index} className="row justify-content-between align-item-center my-2 container">
                           <span className="col-2 fs-4">{expense.nameE}</span>
+                          <input  className="col-1 fs-4"/>
+                          <span className="col-2 fs-5">{expense.descriptionE}</span>
+                          <input  className="col-2 fs-4"/>
                           <span className="col-2 fs-4">{expense.monyE}</span>
-                          <span className="col-2 fs-4">{expense.descriptionE}</span>
-                          <button
-                            className='col-2 btn btn-success rounded-2'
-                            onClick={() => handleEditExpense(expense)}
-                          >
-                            edit
-                          </button>
-                          <button
-                            className='col-1 btn btn-danger rounded-2'
-                            onClick={() => handleAddExpense()}
-                          >
-                            Add
-                          </button>
+                          <input  className="col-1 fs-4"/>
+                          {openUpdate ?
+                            <button
+                              className='col-1 mx-1 btn btn-success rounded-2'
+                              onClick={() => handleEditExpense(expense)}
+                            >
+                              edit
+                            </button>
+                            : " "}
+                         {openUpdate ? 
+             
+                          <button className='col-1 btn btn-danger rounded-2' 
+                          onClick={() => handleAddExpense(expense._id)} > delete </button>
+
+: " "}
                         </div>
                       ))
                     ) : (
@@ -294,6 +316,12 @@ function DayIncome({ userData }) {
                     )}
                   </div>
                 </ul>
+
+                <ul className='justify-content-between container align-item-center row my-2'>
+                  <span className="col-3 fs-4">total money :</span>
+                  <span className='col-3 fs-4'>{totalMoney}</span>
+                </ul>
+
                 <ul className='justify-content-between container align-item-center row my-2'>
                   <span className="col-3 fs-4">monyCheck :</span>
                   {/* <span className='col-3 fs-4'>{income.monyCheck}</span> */}
