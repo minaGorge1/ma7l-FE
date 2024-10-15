@@ -22,10 +22,11 @@ function DayIncome({ userData }) {
   const [openUpdate, setOpenUpdate] = useState(false)
 
   //update data for the selected item
-  const [NewData, setNewData] = useState({});
+  const [newData, setNewData] = useState([{ nameE: "", monyE: " ", descriptionE: " ", _id: " " }]);
+
 
   //total Money 
- const [totalMoney, setTotalMoney] = useState(0)
+  const [totalMoney, setTotalMoney] = useState(0)
 
 
   //startDate 
@@ -49,14 +50,11 @@ function DayIncome({ userData }) {
       setMonyE('');
       setDescriptionE('');
       setMonyCheck("")
-      setTotalMoney(() => {
-        const totalExpenses = income.expenses.reduce((acc, expense) => acc + expense.monyE, 0);
-        return income.mony - totalExpenses;
-      })
+
     }
     setLoading(false);
 
-  }, []);
+  }, [income]);
 
   const [dataUpdate, setDataUpdate] = useState({ expenses: [], monyCheck: {} }); // initialize an empty array to store the data
   const [nameE, setNameE] = useState(''); // initialize state for name input
@@ -80,7 +78,13 @@ function DayIncome({ userData }) {
 
       if (message === "Done") {
         setIncome(resultData.income)
-        console.log(resultData.income);
+
+        setTotalMoney(() => {
+          const totalExpenses = resultData.income.expenses.reduce((acc, expense) => {
+            return expense.isDeleted ? acc : acc + expense.monyE;
+          }, 0);
+          return resultData.income.mony - totalExpenses;
+        })
 
       } else {
 
@@ -99,8 +103,6 @@ function DayIncome({ userData }) {
       ? [{ nameE, monyE, descriptionE }]
       : [{ nameE, monyE }];
 
-
-    console.log(monyCheck);
     if (nameE) {
       update({ expenses: newData });
     } else if (monyCheck) {
@@ -116,34 +118,29 @@ function DayIncome({ userData }) {
 
 
   async function update(dataN) {
-    console.log(dataN);
 
     try {
 
       let api = `http://127.0.0.1:5000/income/${income._id}/update`
       const { message, ...resultData } = (await axios.post(api, dataN, { headers })).data;
-      /* console.log(data.income.monyCheck); */
-      console.log("After update:", dataUpdate);
+
 
       if (message === "Done") {
-        console.log(resultData.income);
+ 
         setIncome(resultData.income)
         dataUpdate(" ");
-
+        getDate()
       }
     } catch (error) {
-      console.log(error.response.data);
       setError(error.response.data.message);
     }
 
   }
 
-  const handleEditExpense = (expense) => {
-    // code to handle editing an expense
-  };
-
-  const handleAddExpense = () => {
+  function handleDeleteExpense(id) {
     // code to handle adding a new expense
+    const expenses = [{ _id: id, isDeleted: true }]
+    update({ expenses })
   };
 
   return <div className="DayIncome my-5 pb-2">
@@ -274,13 +271,14 @@ function DayIncome({ userData }) {
                   <span className="col-3 fs-4">profDay :</span>
                   <span className='col-3 fs-4'>{income.profDay}</span>
                 </ul>
+
                 <ul className='justify-content-between container align-item-center row my-2'>
                   <div className=" container my-2 border border-2 border-black rounded-2">
                     <div className="row container justify-content-start align-item-center my-2 ">
                       <span className="col-2 fs-4">expenses :</span>
                       <button
                         className='col-2 btn btn-success rounded-2'
-                        onClick={() => {!openUpdate? setOpenUpdate(true) : setOpenUpdate(false)}}
+                        onClick={() => { !openUpdate ? setOpenUpdate(true) : setOpenUpdate(false) }}
                       >
                         edit
                       </button>
@@ -288,28 +286,69 @@ function DayIncome({ userData }) {
 
                     {income.expenses ? (
                       income.expenses.map((expense, index) => (
-                        <div key={index} className="row justify-content-between align-item-center my-2 container">
-                          <span className="col-2 fs-4">{expense.nameE}</span>
-                          <input  className="col-1 fs-4"/>
-                          <span className="col-2 fs-5">{expense.descriptionE}</span>
-                          <input  className="col-2 fs-4"/>
-                          <span className="col-2 fs-4">{expense.monyE}</span>
-                          <input  className="col-1 fs-4"/>
-                          {openUpdate ?
-                            <button
-                              className='col-1 mx-1 btn btn-success rounded-2'
-                              onClick={() => handleEditExpense(expense)}
-                            >
-                              edit
-                            </button>
-                            : " "}
-                         {openUpdate ? 
-             
-                          <button className='col-1 btn btn-danger rounded-2' 
-                          onClick={() => handleAddExpense(expense._id)} > delete </button>
+                        expense.isDeleted ? null : (
+                          <div key={index} className="row justify-content-between align-item-center my-2 container">
+                            <span className="col-2 fs-4">{expense.nameE}</span>
+                            {openUpdate ? <input
+                              className="col-1 fs-4"
+                              type="text"
+                              name={`nameE-${index}`}
+                              id={`nameE-${index}`}
+                              value={newData && newData[index] ? newData[index].nameE : " "}
+                              onChange={(e) => {
+                                const updatedData = [...newData];
+                                updatedData[index] = { nameE: e.target.value, _id: expense._id };
+                                setNewData(updatedData);
+                              }}
+                            /> : " "}
 
-: " "}
-                        </div>
+                            <span className="col-2 fs-5">{expense.descriptionE}</span>
+                            {openUpdate ? <input
+                              className="col-1 fs-4"
+                              type="text"
+                              name={`descriptionE-${index}`}
+                              id={`descriptionE-${index}`}
+                              value={newData && newData[index] ? newData[index].descriptionE : " "}
+                              onChange={(e) => {
+                                const updatedData = [...newData];
+                                updatedData[index] = { descriptionE: e.target.value, _id: expense._id };
+                                setNewData(updatedData);
+                              }}
+                            /> : " "}
+
+                            <span className="col-2 fs-4">{expense.monyE}</span>
+                            {openUpdate ? <input
+                              className="col-1 fs-4"
+                              type="text"
+                              name={`monyE-${index}`}
+                              id={`monyE-${index}`}
+                              value={newData && newData[index] ? newData[index].monyE : " "}
+                              onChange={(e) => {
+                                const updatedData = [...newData];
+                                updatedData[index] = { monyE: e.target.value, _id: expense._id };
+                                setNewData(updatedData);
+                              }}
+                            /> : " "}
+
+                            {openUpdate ?
+                              <button
+                                className='col-1 btn btn-success rounded-2'
+                                onClick={() => update({ expenses: newData })}
+                              >
+                                edit
+                              </button>
+                              : " "}
+
+                            {openUpdate ?
+                              <dev className="row justify-content-end align-item-center my-2 ms-2">
+                                <button className='col-1 btn btn-danger rounded-2'
+                                  onClick={() => handleDeleteExpense(expense._id)} > delete </button>
+                                <br />
+                              </dev>
+
+                              : " "}
+                          </div>
+                        )
                       ))
                     ) : (
                       <span>No expenses found</span>

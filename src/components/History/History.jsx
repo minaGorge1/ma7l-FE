@@ -40,7 +40,7 @@ function History({ userData }) {
 
   //startDate 
   const [startDate, setStartDate] = useState(dateNow);
- 
+
 
 
   //status 
@@ -166,8 +166,8 @@ function History({ userData }) {
     try {
       let api = `http://127.0.0.1:5000/order/${id}/update`
       const { data } = await axios.put(api, NewData, { headers })
-     
-      
+
+
       if (data.message === "Done") {
         getDate()
         console.log(data);
@@ -250,9 +250,9 @@ function History({ userData }) {
 
           <div className='justify-content-end container align-item-center row my-2'>
             <button className="col-2 btn btn-success"
-             type="submit"
-             onClick={()=>{ getDate() }}
-             >refresh</button>
+              type="submit"
+              onClick={() => { getDate() }}
+            >refresh</button>
           </div>
 
         </div>
