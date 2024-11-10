@@ -112,9 +112,6 @@ export const createProduct = joi.object({
 
 function Create() {
 
-
- 
-
   //update data for the selected item
   const [NewData, setNewData] = useState({});
 
@@ -163,6 +160,7 @@ function Create() {
         name: "",
         /*   details: "", */ //obj
         stock: 0,
+        place: "",
         realPrice: 1,
         finalPrice: 1,
         description: "",
@@ -179,6 +177,7 @@ function Create() {
         finalPrice: joi.number().positive().min(1).required(),
         realPrice: joi.number().positive().min(1).required(),
         titleId: joi.string(),
+        place: joi.string(),
         categoryId: joi.string(),
         subcategoryId: joi.string(),
         brandId: joi.string()
@@ -619,7 +618,7 @@ function Create() {
                 {loading ? (
                   <p>Loading...</p>
                 ) : error ? (
-                  <p>Error: {error}</p>
+                  <p className='text-danger'>Error: {error}</p>
                 ) : null}
 
               </div> : ""}

@@ -131,7 +131,7 @@ function MissingProducts() {
     <div className='m-4 justify-content-between align-item-center row '>
 
       <div className='col-5 fs-4 justify-content-center align-item-center row'>
-        <span className='col-2 fs-4'>title :</span>
+        <span className='col-2 fs-4'>title:</span>
         <span className='col-2 fs-4'>
           <div className=" dropdown col-5">
             <div className="nav-item dropdown btn btn-outline-success">

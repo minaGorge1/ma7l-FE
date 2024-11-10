@@ -145,8 +145,9 @@ function Products({ userData, addProduct }) {
             <br />
             <span>stock :</span> <span>{product?.stock}</span>
             <br />
+            <span>place :</span> <span>{product?.place}</span>
+            <br />
 
-            {product.description ? <><span>description :</span> <span>{product?.description}</span></> : ""}
 
             {userData && userData.role === "Admin" && (
               <div className=''>
@@ -155,6 +156,9 @@ function Products({ userData, addProduct }) {
               </div>
             )}
             <span>finalPrice :</span> <span>{product?.finalPrice}</span>
+
+            <br />
+            {product.description ? <><span>description :</span> <span>{product?.description}</span></> : ""}
 
             <br />
             <br />
