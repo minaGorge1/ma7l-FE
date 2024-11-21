@@ -1,1 +1,42 @@
 .Update {}
+
+.bg-modan{
+    background-color: #f05454;
+}
+
+.bg-daf2{
+    background-color: #478fed;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    padding: 10px 16px; /* Padding for the button */
+    font-size: 16px; /* Font size */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.dropdown-content {
+    display: none; /* Always block when rendered */
+    /* position: absolute; */ /* Position it below the button */
+    background-color: #f9f9f9; /* Light background for dropdown */
+    min-width: 160px; /* Minimum width of the dropdown */
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); /* Shadow effect */
+   /*  z-index: 1; */ /* Stack on top */
+    opacity: 0; /* Start invisible for animation */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transition for opacity and transform */
+    transform: translateY(-10px); /* Start slightly above */
+    visibility: hidden; /* Initially hidden */
+}
+
+.dropdown-content.show {
+    opacity: 1; /* Fade in */
+    /* transform: translateY(0); */ /* Move to original position */
+    visibility: visible; /* Make it visible */
+    display: block;
+}

@@ -268,7 +268,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
         alert("Created Successfully")
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message);
+      
     }
 
   }

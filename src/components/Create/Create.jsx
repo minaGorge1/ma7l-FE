@@ -58,7 +58,7 @@ http://localhost:5000/subcategory/create/c/65edaffb5c1e8ec217135ee1
 */
 
 //customer
-/*
+/*e
 http://localhost:5000/customer/create
 
 name: joi.string().max(20).required(),
@@ -237,7 +237,7 @@ function Create() {
         name: "",
         phone: "",
         address: "",
-        mony: 0,
+        money: 0,
         description: "",
         status: ""
       },
@@ -246,7 +246,7 @@ function Create() {
         name: joi.string().max(20).required(),
         phone: joi.array().items(joi.number().required()),
         address: joi.string(),
-        mony: joi.number(),
+        money: joi.number(),
         description: joi.string(),
         status: joi.string().valid('صافي', 'ليه فلوس', 'عليه فلوس').default('صافي'),
       })

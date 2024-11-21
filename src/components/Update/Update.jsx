@@ -35,7 +35,9 @@ function Update({ userData }) {
 
 
   //objects to undisplayed from result to display data
-  const [display, setDisplay] = useState(["_id", "category", "subcategory", "categoryId", "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt", "__v", "updatedBy", "isDeleted", "status"])
+  const [display, setDisplay] = useState(["_id", "category", "subcategory", "categoryId",
+    "subcategoryId", "titleId", "brandId", "details", "createdBy", "createdAt", "updatedAt",
+    "__v", "updatedBy", "isDeleted", "status", "transactions"])
 
   //update data for the selected item
   const [NewData, setNewData] = useState({});
@@ -54,6 +56,16 @@ function Update({ userData }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [displayTransactions, setDisplayTransactions] = useState(false);
+
+  const [contTransactions, setContTransactions] = useState(-2);
+
+  const [NewDataTrans, setNewDataTrans] = useState({});
+
+  const toggleTransactions = () => {
+    setDisplayTransactions(prev => !prev);
+  };
 
   useEffect(() => {
 
@@ -196,7 +208,7 @@ function Update({ userData }) {
     });
   }
 
-  //delete product
+  //delete data
   async function deleteData(type, id) {
 
     try {
@@ -210,7 +222,7 @@ function Update({ userData }) {
       setLoading(false);
     }
   }
-
+  //restore data
   async function restoreData(type, id) {
 
     try {
@@ -228,7 +240,47 @@ function Update({ userData }) {
     }
   }
 
+  //create Transaction
+  async function createTransaction(customerId) {
+    try {
+      let api = `http://127.0.0.1:5000/customer/${customerId}/createTransactions`
+      const { data } = await axios.post(api, NewDataTrans, { headers })
 
+      if (data.message === "Done") {
+        getDate(id, type)
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+  }
+
+  //update Transaction
+  async function updateTransaction(customerId, transactionsId) {
+    try {
+      let api = `http://127.0.0.1:5000/customer/${customerId}/updateTransactions/${transactionsId}`
+      const { data } = await axios.post(api, NewDataTrans, { headers })
+
+      if (data.message === "Done") {
+        getDate(id, type)
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+  }
+
+  //delete Transaction
+  async function deleteTransaction(customerId, transactionsId) {
+    try {
+      let api = `http://127.0.0.1:5000/customer/${customerId}/deleteTransactions/${transactionsId}`
+      const { data } = await axios.delete(api, { headers })
+
+      if (data.message === "Done") {
+        getDate(id, type)
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    }
+  }
 
   return (<div className="Update container p-1 mb-5 w-100">
 
@@ -269,7 +321,7 @@ function Update({ userData }) {
 
         )) : "Loading..."}
 
-
+        {/* details in products */}
         {result.details ? Object.keys(result.details)?.map(key => (
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
 
@@ -299,6 +351,7 @@ function Update({ userData }) {
 
         )) : ""}
 
+        {/* ids */}
         {ownedIds ? Object.keys(ownedIds)?.map(key => (
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center' key={key}>
 
@@ -358,18 +411,33 @@ function Update({ userData }) {
         )) : ""}
 
 
+        {/* status in customer */}
 
         {result.status ?
           <div className='m-2 bg-light p-2 rounded mb-4 row justify-content-between align-content-center'>
 
+            {/* not adamin */}
             {!(userData.role === "Admin") ? <>
               <span className='col-3 fs-4'>  status : </span>
-              <span className='col-9 fs-4'>{result.status}</span>
+              <span className={`col-9 fs-4 ${result.status === "عليه فلوس" ?
+                'text-danger' : result.status === 'ليه فلوس' ?
+                  'text-primary' : 'text-success'}`}>
+                {result.status}
+              </span>
             </> : ""}
 
+            {/* dropdown + update to adamin */}
             {userData.role === "Admin" ? <>
-              <span className='col-5'> status : ,&nbsp; {result.status}</span>
-              <span className='col-2'>New status :</span>
+              <span className="col-6 ">
+                <span className="">status : </span>
+                <span className={` fs-4 ${result.status === "عليه فلوس" ?
+                  'text-danger' : result.status === 'ليه فلوس' ?
+                    'text-primary' : 'text-success'}`}>
+                  {result.status}</span>
+              </span>
+
+
+              <span className='col-3'>New status :</span>
 
               <div className=" dropdown col-2">
                 <div className="nav-item dropdown btn btn-outline-primary">
@@ -411,11 +479,104 @@ function Update({ userData }) {
 
 
               <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
-
             }
+
+            <button className="dropbtn col-3 m-2" onClick={toggleTransactions}>
+              {displayTransactions ? 'Hide Transactions' : 'Show Transactions'}
+            </button>
+            <div className={`dropdown-content mt-2 ${displayTransactions ? 'show' : ''}`}>
+
+              <div className={`text-center fs-4`}>
+                <span>Transactions</span>
+                <span className='justify-content-end row'>
+                  <button className='btn col-1 btn-dark fs-5 me-2' onClick={() => { setContTransactions(prevCount => prevCount - 1) }}>more</button>
+                  <button className='btn col-1 btn-success fs-5' onClick={() => { createTransaction(result._id) }}>create</button>
+                </span>
+              </div>
+              {result.transactions?.slice(contTransactions).reverse().map((transaction) => {
+
+                // Create a Date object
+                const date = new Date(transaction.date);
+
+                // Get the day, month, and year
+                const day = String(date.getUTCDate()).padStart(2, '0'); // Pad with leading zero if needed
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+                const year = date.getUTCFullYear();
+
+                // Get the hour and minute
+                let hour = date.getUTCHours(); // Get hour in UTC
+                const minute = String(date.getUTCMinutes()).padStart(2, '0'); // Get minutes in UTC and pad with leading zero
+
+                // Convert to 12-hour format
+                const ampm = hour >= 12 ? 'PM' : 'AM'; // Determine AM or PM
+                hour = hour % 12; // Convert hour to 12-hour format
+                hour = hour ? String(hour).padStart(2, '0') : '12'; // Convert 0 to 12 and pad with leading zero if needed
+
+                // Format the date as dd/mm/yyyy and time as HH:mm
+                const formattedDate = `${day}/${month}/${year}`;
+                const formattedTime = `${hour}:${minute} ${ampm}`;
+
+                return (
+                  <div key={result.transactions.indexOf()} className={`p-1 my-3 row justify-content-start 
+                    align-content-center border border-2 border-black 
+                    ${transaction.clarification === "دفع" ?
+                      'bg-daf2' : transaction.clarification === "دين" ?
+                        'bg-modan' : ''}`}>
+
+                    <div className='row'>
+                      <span className='col-2 fs-5'>
+                        <span> date : </span>
+                        <span> {formattedDate}</span>
+                      </span>
+                      <span className='col-2 fs-5'>
+                        <span> time : </span>
+                        <span> {formattedTime}</span>
+                      </span>
+                    </div>
+
+                    <div className="row">
+                      <span className='col-2 fs-5'>
+                        <span> clarification : </span>
+                        <span> {transaction.clarification}</span>
+                      </span>
+                      <span className='col-3 fs-5'>
+                        <span> type : </span>
+                        <span> {transaction.type}</span>
+                      </span>
+                    </div>
+
+                    <div >
+                      <span className='col-3 fs-5'>
+                        <span> money : </span>
+                        <span> {transaction.amount}</span>
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className='col-2 fs-5'>
+                        <span> description : </span>
+                        <span> {transaction.description}</span>
+                      </span>
+                    </div>
+
+                    <div className='justify-content-end align-content-center row mb-2'>
+                      <button className='btn col-1 me-2 btn-primary' onClick={() => { updateTransaction(result._id, transaction._id) }}> update</button>
+                      <button className='btn col-1 btn-danger' onClick={() => { deleteTransaction(result._id, transaction._id) }}> delete</button>
+                    </div>
+
+                  </div>
+                )
+              })}
+
+            </div>
+
           </div>
 
           : ""}
+
+
+
+
 
         {deleteS && userData && userData.role === "Admin" ?
           <>
