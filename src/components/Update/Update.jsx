@@ -47,8 +47,12 @@ function Update({ userData }) {
 
   //result don't have Ids
   const [values, setValues] = useState({});
-
+  // status to dropdown
   const [status, setStatus] = useState(["صافي", "ليه فلوس", "عليه فلوس"]);
+  // clarification to dropdown
+  const [clarification, setClarification] = useState(["دين", "دفع"]);
+  // typeMoney to dropdown
+  const [typeM, seTypeM] = useState(["تحويل", "كاش"]);
 
   const [selectedItem, setSelectedItem] = useState({});
 
@@ -56,16 +60,19 @@ function Update({ userData }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  // display Transactions
   const [displayTransactions, setDisplayTransactions] = useState(false);
-
+  // cont Transactions
   const [contTransactions, setContTransactions] = useState(-2);
+  // NewData Trans to update
+  const [newTransactionData, setNewTransactionData] = useState({});
+  // NewData Trans to update id
+  const [editTransactionId, setEditTransactionId] = useState(null);
 
-  const [NewDataTrans, setNewDataTrans] = useState({});
+  // open create Transactions
+  const [openCreateTrans, setOpenCreateTrans] = useState(false);
 
-  const toggleTransactions = () => {
-    setDisplayTransactions(prev => !prev);
-  };
+
 
   useEffect(() => {
 
@@ -243,13 +250,17 @@ function Update({ userData }) {
   //create Transaction
   async function createTransaction(customerId) {
     try {
+      console.log(newTransactionData);
+      
       let api = `http://127.0.0.1:5000/customer/${customerId}/createTransactions`
-      const { data } = await axios.post(api, NewDataTrans, { headers })
+      const { data } = await axios.post(api, newTransactionData, { headers })
 
       if (data.message === "Done") {
         getDate(id, type)
       }
     } catch (error) {
+      console.log(error.response.data);
+      
       setError(error.response.data.message);
     }
   }
@@ -258,7 +269,8 @@ function Update({ userData }) {
   async function updateTransaction(customerId, transactionsId) {
     try {
       let api = `http://127.0.0.1:5000/customer/${customerId}/updateTransactions/${transactionsId}`
-      const { data } = await axios.post(api, NewDataTrans, { headers })
+      const { data } = await axios.post(api, newTransactionData, { headers })
+      console.log();
 
       if (data.message === "Done") {
         getDate(id, type)
@@ -281,6 +293,10 @@ function Update({ userData }) {
       setError(error.response.data.message);
     }
   }
+  //display trans
+  const toggleTransactions = () => {
+    setDisplayTransactions(prev => !prev);
+  };
 
   return (<div className="Update container p-1 mb-5 w-100">
 
@@ -478,19 +494,165 @@ function Update({ userData }) {
               </div>
 
 
-              <button className='btn col-1 btn-primary' onClick={update}> update</button> </> : ""
+              <button className='btn col-1 btn-primary' onClick={update}> update</button>
+              <div className='justify-content-end align-content-center row pt-2 '>
+                <button className='btn col-2 ms-3 btn-success fs-5' onClick={() => {
+                  setOpenCreateTrans(!openCreateTrans)
+                  /* createTransaction(result._id) */
+                }}>create Transaction</button>
+
+              </div>
+
+              {openCreateTrans ?
+                <div className='justify-content-start align-content-center row border border-2 border-black p-2 mt-2 mx-1'>
+
+                  <div className='mt-1'>
+                    <span className='col-2 fs-5'>
+                      <span> clarification : </span>
+
+                      <span className=" dropdown col-2">
+                        <div className="nav-item dropdown btn btn-outline-dark">
+                          <Link className="nav-link dropdown-toggle"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            {!(newTransactionData)?.clarification ? "select clarification" : newTransactionData.clarification}
+                          </Link>
+                          <ul className="dropdown-menu">
+
+                            {clarification?.map((item, i) => (
+                              <button key={i}
+
+                                onClick={(e) => {
+                                  setNewTransactionData((prevData) => ({
+                                    ...prevData,
+                                    clarification: item
+
+                                  }));
+                                  handleeDataDisplay()
+                                }}
+
+                                className="dropdown-item w-75 d-block text-start mx-3">
+                                {item}
+                              </button>
+                            ))}
+                          </ul>
+                        </div>
+                      </span>
+                    </span>
+                  </div>
+
+                  <div className='mt-2'>
+                    <span className='col-6 fs-5'>
+                      <span> type : </span>
+
+
+                      <span className=" dropdown col-2">
+                        <div className="nav-item dropdown btn btn-outline-dark">
+                          <Link className="nav-link dropdown-toggle"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            {!(newTransactionData)?.type ? "select type" : newTransactionData.type}
+                          </Link>
+                          <ul className="dropdown-menu">
+
+                            {typeM?.map((item, i) => (
+                              <button key={i}
+
+                                onClick={(e) => {
+                                  setNewTransactionData((prevData) => ({
+                                    ...prevData,
+                                    type: item
+
+                                  }));
+                                  handleeDataDisplay()
+                                }}
+
+                                className="dropdown-item w-75 d-block text-start mx-3">
+                                {item}
+                              </button>
+                            ))}
+                          </ul>
+                        </div>
+                      </span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className='col-3 fs-5'>
+                      <span> money : </span>
+
+                      <input
+                        className='mt-2'
+                        placeholder="money"
+                        type="number"
+                        value={newTransactionData?.amount}
+                        onChange={(e) => setNewTransactionData({ ...newTransactionData, amount: e.target.value })}
+                      />
+
+                    </span>
+
+                  </div>
+
+                  <div>
+                    <span className='col-2 fs-5'>
+                      <span> description : </span>
+
+                      <input
+                        className='mt-2'
+                        placeholder="description"
+                        type="text"
+                        value={newTransactionData?.description}
+                        onChange={(e) => setNewTransactionData({ ...newTransactionData, description: e.target.value })}
+                      />
+
+                    </span>
+                  </div>
+
+                  <div className='justify-content-end align-content-center row mb-2'>
+
+                    {/* // Check if the required fields in newTransactionData are filled */}
+                    {newTransactionData.clarification || newTransactionData.type || newTransactionData.amount || newTransactionData.description ? (
+                      <button
+                        className='btn col-1 me-2 btn-primary'
+                        onClick={() => {
+                          createTransaction(result._id);
+
+                        }}
+                      >
+                        Done.!
+                      </button>
+                    ) : (
+                      <button className='btn col-1 me-2 btn-disabled' disabled>
+                        Done.!
+                      </button>
+                    )}
+                  </div>
+
+                </div> : null}
+
+            </> : ""
             }
 
-            <button className="dropbtn col-3 m-2" onClick={toggleTransactions}>
-              {displayTransactions ? 'Hide Transactions' : 'Show Transactions'}
-            </button>
+
+            {result.transactions.length > 0 ? (
+              <div className='text-center'>
+                <button className="dropbtn col-3 m-2" onClick={toggleTransactions}>
+                  {displayTransactions ? 'Hide Transactions' : 'Show Transactions'}
+                </button>
+              </div>
+            ) : null}
+
             <div className={`dropdown-content mt-2 ${displayTransactions ? 'show' : ''}`}>
 
               <div className={`text-center fs-4`}>
                 <span>Transactions</span>
                 <span className='justify-content-end row'>
                   <button className='btn col-1 btn-dark fs-5 me-2' onClick={() => { setContTransactions(prevCount => prevCount - 1) }}>more</button>
-                  <button className='btn col-1 btn-success fs-5' onClick={() => { createTransaction(result._id) }}>create</button>
+                  <button className='btn col-1 btn-dark fs-5 me-2' onClick={() => { setContTransactions(prevCount => prevCount - prevCount) }}>all</button>
                 </span>
               </div>
               {result.transactions?.slice(contTransactions).reverse().map((transaction) => {
@@ -537,30 +699,143 @@ function Update({ userData }) {
                     <div className="row">
                       <span className='col-2 fs-5'>
                         <span> clarification : </span>
-                        <span> {transaction.clarification}</span>
+                        {editTransactionId === transaction._id ?
+                          <span className=" dropdown col-2">
+                            <div className="nav-item dropdown btn btn-outline-dark">
+                              <Link className="nav-link dropdown-toggle"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                {!(newTransactionData)?.clarification ? transaction.clarification : newTransactionData.clarification}
+                              </Link>
+                              <ul className="dropdown-menu">
+
+                                {clarification?.map((item, i) => (
+                                  <button key={i}
+
+                                    onClick={(e) => {
+                                      setNewTransactionData((prevData) => ({
+                                        ...prevData,
+                                        clarification: item
+
+                                      }));
+                                      handleeDataDisplay()
+                                    }}
+
+                                    className="dropdown-item w-75 d-block text-start mx-3">
+                                    {item}
+                                  </button>
+                                ))}
+                              </ul>
+                            </div>
+                          </span> :
+                          <span> {transaction.clarification}</span>
+                        }
                       </span>
+
                       <span className='col-3 fs-5'>
                         <span> type : </span>
-                        <span> {transaction.type}</span>
+
+                        {editTransactionId === transaction._id ?
+                          <span className=" dropdown col-2">
+                            <div className="nav-item dropdown btn btn-outline-dark">
+                              <Link className="nav-link dropdown-toggle"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                {!(newTransactionData)?.type ? transaction.type : newTransactionData.type}
+                              </Link>
+                              <ul className="dropdown-menu">
+
+                                {typeM?.map((item, i) => (
+                                  <button key={i}
+
+                                    onClick={(e) => {
+                                      setNewTransactionData((prevData) => ({
+                                        ...prevData,
+                                        type: item
+
+                                      }));
+                                      handleeDataDisplay()
+                                    }}
+
+                                    className="dropdown-item w-75 d-block text-start mx-3">
+                                    {item}
+                                  </button>
+                                ))}
+                              </ul>
+                            </div>
+                          </span> :
+                          <span> {transaction.type}</span>
+                        }
                       </span>
                     </div>
 
                     <div >
                       <span className='col-3 fs-5'>
                         <span> money : </span>
-                        <span> {transaction.amount}</span>
+                        {/* <span> {transaction.amount}</span> */}
+                        {editTransactionId === transaction._id ? (
+                          <input
+                            className='mt-2'
+                            placeholder={transaction.amount}
+                            type="number"
+                            value={newTransactionData?.amount}
+                            onChange={(e) => setNewTransactionData({ ...newTransactionData, amount: e.target.value })}
+                          />
+                        ) : (
+                          <span>{transaction.amount}</span>
+                        )}
                       </span>
+
                     </div>
 
                     <div>
                       <span className='col-2 fs-5'>
                         <span> description : </span>
-                        <span> {transaction.description}</span>
+                        {/* <span> {transaction.description}</span> */}
+
+                        {editTransactionId === transaction._id ? (
+                          <input
+                            className='mt-2'
+                            placeholder={transaction.description}
+                            type="text"
+                            value={newTransactionData?.description}
+                            onChange={(e) => setNewTransactionData({ ...newTransactionData, description: e.target.value })}
+                          />
+                        ) : (
+                          <span> {transaction.description}</span>
+                        )}
+
                       </span>
                     </div>
 
                     <div className='justify-content-end align-content-center row mb-2'>
-                      <button className='btn col-1 me-2 btn-primary' onClick={() => { updateTransaction(result._id, transaction._id) }}> update</button>
+                      {editTransactionId === transaction._id ? (
+                        // Check if the required fields in newTransactionData are filled
+                        newTransactionData.clarification || newTransactionData.type || newTransactionData.amount || newTransactionData.description ? (
+                          <button
+                            className='btn col-1 me-2 btn-primary'
+                            onClick={() => {
+                              updateTransaction(result._id, transaction._id); // Pass newTransactionData to the update function
+                              setEditTransactionId(null); // Reset edit state after updating
+                            }}
+                          >
+                            Update
+                          </button>
+                        ) : (
+                          <button className='btn col-1 me-2 btn-disabled' disabled>
+                            Update
+                          </button>
+                        )
+                      ) : null}
+
+                      <button className='btn col-1 me-2 btn-success' onClick={() => {
+
+                        { editTransactionId ? setEditTransactionId(null) : setEditTransactionId(transaction._id) }
+                      }}> Edit</button>
                       <button className='btn col-1 btn-danger' onClick={() => { deleteTransaction(result._id, transaction._id) }}> delete</button>
                     </div>
 
@@ -573,10 +848,6 @@ function Update({ userData }) {
           </div>
 
           : ""}
-
-
-
-
 
         {deleteS && userData && userData.role === "Admin" ?
           <>
