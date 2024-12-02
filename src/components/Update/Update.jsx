@@ -122,7 +122,6 @@ function Update({ userData }) {
     try {
       let api = `http://127.0.0.1:5000/${type}/${id}/update`
       const { data } = await axios.post(api, NewData, { headers })
-
       if (data.message === "Done") {
         getDate(id, type)
       }
@@ -250,7 +249,6 @@ function Update({ userData }) {
   //create Transaction
   async function createTransaction(customerId) {
     try {
-      console.log(newTransactionData);
       
       let api = `http://127.0.0.1:5000/customer/${customerId}/createTransactions`
       const { data } = await axios.post(api, newTransactionData, { headers })
@@ -259,7 +257,6 @@ function Update({ userData }) {
         getDate(id, type)
       }
     } catch (error) {
-      console.log(error.response.data);
       
       setError(error.response.data.message);
     }
@@ -270,7 +267,6 @@ function Update({ userData }) {
     try {
       let api = `http://127.0.0.1:5000/customer/${customerId}/updateTransactions/${transactionsId}`
       const { data } = await axios.post(api, newTransactionData, { headers })
-      console.log();
 
       if (data.message === "Done") {
         getDate(id, type)
@@ -436,7 +432,7 @@ function Update({ userData }) {
             {!(userData.role === "Admin") ? <>
               <span className='col-3 fs-4'>  status : </span>
               <span className={`col-9 fs-4 ${result.status === "عليه فلوس" ?
-                'text-danger' : result.status === 'ليه فلوس' ?
+                'text-danger' : result.status === "ليه فلوس" ?
                   'text-primary' : 'text-success'}`}>
                 {result.status}
               </span>
@@ -655,7 +651,7 @@ function Update({ userData }) {
                   <button className='btn col-1 btn-dark fs-5 me-2' onClick={() => { setContTransactions(prevCount => prevCount - prevCount) }}>all</button>
                 </span>
               </div>
-              {result.transactions?.slice(contTransactions).reverse().map((transaction) => {
+              {result.transactions?.slice(contTransactions).reverse().map((transaction , key) => {
 
                 // Create a Date object
                 const date = new Date(transaction.date);
@@ -679,7 +675,7 @@ function Update({ userData }) {
                 const formattedTime = `${hour}:${minute} ${ampm}`;
 
                 return (
-                  <div key={result.transactions.indexOf()} className={`p-1 my-3 row justify-content-start 
+                  <div key={key} className={`p-1 my-3 row justify-content-start 
                     align-content-center border border-2 border-black 
                     ${transaction.clarification === "دفع" ?
                       'bg-daf2' : transaction.clarification === "دين" ?

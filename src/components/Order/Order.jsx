@@ -6,7 +6,7 @@ import axios from 'axios';
 import Select from 'react-select';
 import joi from 'joi';
 
-export function Order({ arrayProducts, addProduct, deleteProduct }) {
+export function Order({ arrayProducts, addProduct, deleteProduct, userData, setCustomerApp, customerApp }) {
 
   const headers = {
     "authorization": `Min@__${localStorage.getItem("token")}`
@@ -31,9 +31,15 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   const [productsDisplay, setProductsDisplay] = useState([])
   //products send
   let [products, setProducts] = useState([]);
-  // final price
+  // final price to display
   const [finalPrice, setFinalPrice] = useState(0);
+  // final price to paid
+  const [finalPriceReal, setFinalPriceReal] = useState(0);
+  //customer
+  const [customer, setCustomer] = useState({})
 
+  //add money
+  const [addMoney, setAddMoney] = useState(false)
 
   //status 
   const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
@@ -98,6 +104,10 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     deleteProduct();
     setFinalPrice("0")
     setSearchQuery("")
+    setCustomer({})
+    setCustomerApp({})
+    setAddMoney(false)
+    setFinalPriceReal("0")
     setResult([])
     getIdsData()
   }
@@ -141,6 +151,9 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       });
 
     }
+    if (customerApp) {
+      setCustomer(customerApp)
+    }
   }
   /*   function refData() {
       if (arrayProducts.length > 0) {
@@ -158,32 +171,39 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
   const handleSearchPro = (e) => {
     setSearchQuery(e.target.value);
-    search(searchQuery)
+    search(e.target.value)
   };
 
-  async function search(searchQuery) {
+  async function search(value) {
 
     try {
-      let api = `http://127.0.0.1:5000/product?search=${searchQuery}|name=${searchQuery}&isDeleted=false`
+
+      let api = `http://127.0.0.1:5000/product?search=${value}|name=${value}&isDeleted=false`
       const { message, ...resultData } = (await axios.get(api)).data;
 
 
-      resultData.product = resultData.product.map((el) => {
-        for (const id of ids) {
-          for (const key in el) {
-            if (id === key) {
-              const idValue = key.split("I")[0];
+      // Check if products exist and are an array
+      if (Array.isArray(resultData.product)) {
+        const updatedProducts = resultData.product.map((product) => {
+          const updatedProduct = { ...product }; // Create a shallow copy of the product
+
+          for (const id of ids) {
+            if (updatedProduct[id]) {
+              const idValue = id.split("I")[0];
               if (idsData[idValue]) {
-                el[idValue] = idsData[idValue].find((item) => item._id === el[id]);
+                updatedProduct[idValue] = idsData[idValue].find((item) => item._id === updatedProduct[id]);
               }
             }
           }
-        }
-        return el;
-      });
 
+          return updatedProduct; // Return the updated product
+        });
 
-      setResult(resultData.product);
+        setResult(updatedProducts);
+      } else {
+        console.warn("No products found or products is not an array.");
+        setResult([]); // Optionally set an empty array if no products
+      }
     } catch (error) {
       setError(error.response.data.message);
     }
@@ -194,7 +214,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
   const handleSearchCus = (value) => {
     setOrder(prevOrder => ({ ...prevOrder, customerId: value?.value || " " }))
-
+    setCustomer(value)
+    setCustomerApp(value)
   };
 
   //customer name
@@ -202,6 +223,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
   const options = idsData.customer ? idsData.customer.map((el) => ({
     value: el._id, // id
     label: el.name, //  aly bizhr
+    money: el.money,
+    status: el.status
   })) : [];
 
 
@@ -259,7 +282,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
     try {
       /*  setOrder(prevOrder => ({ ...prevOrder, "ProfitMargin":  })) */
-      
+
       let api = `http://127.0.0.1:5000/order/create`
       const { data } = await axios.post(api, order, { headers });
       if (data.message === "Done") {
@@ -269,18 +292,61 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
       }
     } catch (error) {
       setError(error.response.data.message);
-      
+
     }
 
   }
 
+  function editMoney() {
+    if (customer.status === "عليه فلوس" && !addMoney) {
+      setFinalPriceReal(finalPrice + customer.money)
+    } else if (customer.status === "ليه فلوس" && !addMoney) {
+      finalPrice > customer.money ?
+        setFinalPriceReal(finalPrice - customer.money) :
+        setFinalPriceReal(-(customer.money - finalPrice))
+    } else (
+      setFinalPriceReal(finalPrice)
+    )
+  }
+
+  //create Transaction
+  /* async function createTransaction(value) {
+
+    const newTransactionData = {}
+    if (value === "5alis") {
+      newTransactionData.clarification = "دفع"
+      newTransactionData.amount = customer.money
+      newTransactionData.type = "كاش"
+    } else if (value === "diin") {
+      newTransactionData.clarification = "دين"
+      newTransactionData.amount = finalPriceReal - order.paid
+      newTransactionData.type= "كاش"
+    }
+
+    try {
+
+
+      let api = `http://127.0.0.1:5000/customer/${customer.value}/createTransactions`
+      const { data } = await axios.post(api, newTransactionData, { headers })
+
+      if (data.message === "Done") {
+        refresh()
+
+        alert("Created Successfully")
+      }
+    } catch (error) {
+      console.log(error.response.data);
+
+      setError(error.response.data.message);
+    }
+  } */
 
   return (<div className="Search position-relative ">
     {/* Order Component */}
 
     {/* icon search */}
-    <div className=' position-search p-4  col-12' style={{ display: isVisible ? 'block' : 'none' }} >
-      <div className=' bg-white rounded-3 p-3 h-100 position-relative icon-search'>
+    <div className=' position-search p-4  col-12 ' style={{ display: isVisible ? 'block' : 'none' }} >
+      <div className=' bg-white rounded-3 p-3 h-100 position-relative icon-search '>
 
         <div onClick={handleClick} className='position-absolute  top-0 end-0 me-4 fs-2 text-center rounded-5 px-3 mt-3 close-search'>
           x
@@ -291,32 +357,31 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
         {/* search */}
         <div className="container position-fixed my-4">
 
+          <div className=' justify-content-center align-item-around row '>
 
-          <div className=' justify-content-center align-item-around '>
-            <div className='row justify-content-center '>
-              <input className="col-2 w-50 form-control m-1"
-                type="search"
-                placeholder="Search"
-                aria-label="Search"
-                value={searchQuery}
-                onChange={handleSearchPro} />
+            <input className="col-2 w-50 form-control m-1 "
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+              value={searchQuery}
+              onChange={handleSearchPro} />
 
-              <div className='col-3  justify-content-around align-items-center d-flex '>
-
+            <div className='col-3  justify-content-around align-items-center d-flex '>
 
 
 
-                <button className=" btn btn-primary  "
-                  onClick={() => {
-                    if (itemQuery) {
-                      search(searchQuery, itemQuery)
-                    }
-                  }}>Search</button>
+
+              <button className=" btn btn-primary  "
+                onClick={() => {
+                  if (itemQuery) {
+                    search(searchQuery, itemQuery)
+                  }
+                }}>Search</button>
 
 
 
-              </div>
             </div>
+
           </div>
         </div>
 
@@ -347,8 +412,12 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                   <span>category: </span> <span>{el.category.name}</span>
                 </div>
 
-                <div className='col-12 my-2'>
+                <div className='col-6 my-2'>
                   <span>subcategory: </span> <span>{el.subcategory.name}</span>
+                </div>
+
+                <div className='col-6 my-2'>
+                  <span>Price: </span> <span>{el.finalPrice}</span>
                 </div>
 
 
@@ -388,17 +457,28 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
     {/* custmer name */}
 
     <div className=' justify-content-between align-content-center row container  py-2'>
-      <div className='  row col-8 '>
+      <div className='  row  '>
 
         <div className='col-3'><span>customer: </span></div>
 
         <Select
-          className="search-dropdown col-5"
-          /*  value={customerName} */
+          className="search-dropdown col-4"
+          value={customer?.label || "select customer..."}
+          placeholder={customer?.label || "select customer..."}
           onChange={handleSearchCus}
           options={options}
         />
 
+        {customer.value ?
+          <div className='col-5 '>
+            <Link to={`http://localhost:3000/update/customer/${customer?.value}`} className='col-2 me-1'>
+              <button className='btn btn-success '>data</button>
+            </Link>
+            <button className='btn btn-danger col-2' onClick={() => {
+              setCustomer({})
+              setCustomerApp({})
+            }} >delete</button>
+          </div> : null}
 
       </div>
     </div>
@@ -462,7 +542,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
           <input
             id="paid"
             name='paid'
-            placeholder={finalPrice}
+            placeholder={finalPriceReal}
             onChange={(e) => {
               const { error } = validators.paidSchema.validate(e.target?.value);
               if (error) {
@@ -483,10 +563,10 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
         </div>
 
-        <div className='pt-4 '>
+        <div className='pt-4  justify-content-around align-content-center row'>
 
           {order.paid < finalPrice ?
-            <div>
+            <div className='col-6'>
               <button className=" btn btn-danger "
                 onClick={() => {
                   createOrder()
@@ -494,7 +574,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
               <p className='text-danger'>راجاء مراجعة الاسعار</p>
             </div>
             :
-            <div>
+            <div className='col-6'>
               <button className=" btn btn-success "
                 onClick={() => {
                   createOrder()
@@ -502,6 +582,24 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
             </div>
 
           }
+
+          {/* {order.paid < finalPriceReal ?
+            <div className='col-6'>
+              <button className=" btn btn-danger "
+                onClick={() => {
+                  createTransaction("5alis")
+                }}>خااالص</button>
+              <p className='text-danger'>راجاء مراجعة الاسعار</p>
+            </div>
+            :
+            <div className='col-6'>
+              <button className=" btn btn-success "
+                onClick={() => {
+                  createTransaction("diin")
+                }}>add</button>
+            </div>
+
+          } */}
 
         </div>
       </div>
@@ -575,7 +673,10 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
                 </span>}
 
               {/* realPrice */}
-              <span className=' py-2 text-center col-1 realPrice border-end'>{el.realPrice}</span>{/*  admin */}
+              {(userData.role === "Admin") ?
+                <span className=' py-2 text-center col-1 realPrice border-end'>{el.realPrice}</span>
+                : <span className='col-10 fs-4'> ___ </span>}
+
 
               {/* quantity */}
               <span className=" col-1 text-center border-end">
@@ -742,10 +843,78 @@ export function Order({ arrayProducts, addProduct, deleteProduct }) {
 
         )}
 
-        <div className=' bg-black opacity-75 text-center   item  justify-content-end row align-content-center'>
-          <span className='col-2 ps-4 py-2  fs-5'>Final Prise :</span>
+        {customer.value ?
+          <div
+            className=' text-decoration-none '>
+            <div className='p-2 text-white  h6  bg-black opacity-75 text  item justify-content-between align-item-center row'>
+              <span className=' py-2 text-center col-2 ms-1 border-end'>حساب سابق</span>
 
-          <span className='col-1 ps-4 py-1 fs-4'>{finalPrice}</span>
+              {/* realPrice */}
+              <span className=' py-2 col-1 text-center border-end'>___</span>
+              {/* quantity */}
+              <span className=' py-2 col-1 text-center border-end'>___</span>
+
+              {/* discount */}
+              <span className=' py-2 col-1 text-center border-end'>___</span>
+
+              <span className=' py-2 col-1 text-center border-end'>___</span>
+
+
+              {/* inchPrice */}
+              <span className=' py-2 col-2 text-center border-end'>{customer.status}</span>
+
+              <Link className='col-2 text-center border-end'>
+                <button className=' btn btn-success ' onClick={() => {
+                  setAddMoney(!addMoney)
+                  editMoney()
+                }}>{customer.status === "عليه فلوس" ? "gam3" : "an2s"}</button>
+              </Link>
+
+              <span className=' py-2 col-1 text-center text-center' >
+                {/* {el.finalPriceUnit * (el?.quantity || products?.find(item => item.productId === el._id)?.quantity || 0)} */}
+                {customer.money}
+              </span>
+
+            </div>
+          </div> : ""}
+
+        {/*     enum: ["صافي", "ليه فلوس", "عليه فلوس"]
+ */}
+
+        <div className='bg-black opacity-75 text-center item justify-content-end row align-content-end'>
+
+          {customer.money ? (
+            <>
+              {customer.status === "عليه فلوس" && addMoney ? (
+                <span className='col-3 ms-4 py-2 fs-5'>
+                  <span className='ps-4 col-2 fs-5'>( يدفع ) :</span>
+                  <span className='ps-4 col-2 fs-4'>{finalPrice + customer.money}</span>
+                </span>
+              ) : customer.status === "ليه فلوس" && addMoney ? (
+                finalPrice > customer.money ? (
+                  <span className='col-3 ms-4 py-2 fs-5'>
+                    <span className='ps-4 col-2 fs-5'>( يدفع ) :</span>
+                    <span className='ps-4 col-2 fs-4'>{finalPrice - customer.money}</span>
+                  </span>
+                ) : (
+                  <span className='col-3 ms-4 py-2 fs-5 bg-success'>
+                    <span className='ps-4 col-2 fs-5'>( ليه ) :</span>
+                    <span className='ps-4 col-2 fs-4 '>{customer.money - finalPrice}</span>
+                  </span>
+                )
+              ) : (
+                <span className='col-3 ms-4 py-2 fs-5'>
+                  <span className='ps-4 col-2 fs-5'>Final Price:</span>
+                  <span className='ps-4 col-2 fs-4'>{finalPrice}</span>
+                </span>
+              )}
+            </>
+          ) : (
+            <span className='col-3 ms-4 py-2 fs-5'>
+              <span className='ps-4 col-2 fs-5'>Final Price:</span>
+              <span className='ps-4 col-2 fs-4'>{finalPrice}</span>
+            </span>
+          )}
         </div>
 
       </div>
