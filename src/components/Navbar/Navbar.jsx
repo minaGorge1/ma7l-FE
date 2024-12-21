@@ -53,7 +53,7 @@ export default function Navbar({ userData, logout }) {
 
 
   return <>
-    <nav className="navbar mb-4 nav-color navbar-expand-lg bg-black-opacity">
+    <nav className="navbar  nav-color navbar-expand-lg bg-black-opacity">
       <div className="container-fluid">
         <Link className="navbar-brand fs-3" to="home" >Youssef Henaan</Link>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

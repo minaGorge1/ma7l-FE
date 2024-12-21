@@ -24,7 +24,7 @@ function Home() {
   }
 
   return (
-    <div className="Home ">
+    <div className="Home mt-3">
 
       <div className='container d-flex col-10 align-items-center justify-content-center'>
 

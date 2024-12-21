@@ -35,3 +35,25 @@
 .realPrice:hover{
     opacity:  1 !important;
 }
+
+.position-payment {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99; 
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.1);
+    width: 100% !important;
+    height: 100%;
+    
+}
+
+.icon-payment {
+    min-height: 200px; /* Set minimum height */
+    flex: 1 1 auto; /* Make it flexible */
+    margin-bottom: 10px;
+}

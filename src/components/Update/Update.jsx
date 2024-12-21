@@ -249,7 +249,7 @@ function Update({ userData }) {
   //create Transaction
   async function createTransaction(customerId) {
     try {
-      
+
       let api = `http://127.0.0.1:5000/customer/${customerId}/createTransactions`
       const { data } = await axios.post(api, newTransactionData, { headers })
 
@@ -257,7 +257,8 @@ function Update({ userData }) {
         getDate(id, type)
       }
     } catch (error) {
-      
+      console.log(error.response.data);
+
       setError(error.response.data.message);
     }
   }
@@ -585,7 +586,7 @@ function Update({ userData }) {
                         className='mt-2'
                         placeholder="money"
                         type="number"
-                        value={newTransactionData?.amount}
+                        /* value={newTransactionData?.amount || 0} */
                         onChange={(e) => setNewTransactionData({ ...newTransactionData, amount: e.target.value })}
                       />
 
@@ -601,7 +602,7 @@ function Update({ userData }) {
                         className='mt-2'
                         placeholder="description"
                         type="text"
-                        value={newTransactionData?.description}
+                        /* value={newTransactionData?.description || "empty"} */
                         onChange={(e) => setNewTransactionData({ ...newTransactionData, description: e.target.value })}
                       />
 
@@ -651,7 +652,7 @@ function Update({ userData }) {
                   <button className='btn col-1 btn-dark fs-5 me-2' onClick={() => { setContTransactions(prevCount => prevCount - prevCount) }}>all</button>
                 </span>
               </div>
-              {result.transactions?.slice(contTransactions).reverse().map((transaction , key) => {
+              {result.transactions?.slice(contTransactions).reverse().map((transaction, key) => {
 
                 // Create a Date object
                 const date = new Date(transaction.date);

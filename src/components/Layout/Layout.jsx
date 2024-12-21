@@ -21,7 +21,7 @@ const Layout = ({ userData, logout }) => {
 
 return <>
   <Navbar userData={userData} logout={logout} />
-  <div className='container'>
+  <div className=''>{/* container */}
     <Outlet></Outlet>
   </div>
   <Footer />

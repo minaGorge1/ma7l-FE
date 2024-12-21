@@ -54,7 +54,7 @@ function DayIncome({ userData }) {
     }
     setLoading(false);
 
-  }, [income]);
+  }, [/* income */]);
 
   const [dataUpdate, setDataUpdate] = useState({ expenses: [], monyCheck: {} }); // initialize an empty array to store the data
   const [nameE, setNameE] = useState(''); // initialize state for name input
@@ -75,8 +75,8 @@ function DayIncome({ userData }) {
       setLoading(true);
 
       const { message, ...resultData } = (await axios.post(api, newData, { headers })).data;
-
-      if (message === "Done") {
+      console.log( { message, ...resultData }); 
+      if (message === "Done" ) {
         setIncome(resultData.income)
 
         setTotalMoney(() => {
@@ -87,11 +87,13 @@ function DayIncome({ userData }) {
         })
 
       } else {
-
+        
+        
+        return setIncome( )
       }
     } catch (error) {
       setIncome({})
-      setError(error.response.data.message);
+      setError(error?.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ function DayIncome({ userData }) {
     update({ expenses })
   };
 
-  return <div className="DayIncome my-5 pb-2">
+  return <div className="DayIncome my-5 pb-2 container">
     {/* day income Component */}
 
 

@@ -403,7 +403,7 @@ function Create() {
 
 
 
-  return <div className="Create my-5">
+  return <div className="Create my-5 container">
 
 
     <div className='container '>

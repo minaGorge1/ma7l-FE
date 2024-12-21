@@ -41,8 +41,8 @@ function History({ userData }) {
   //startDate 
   const [startDate, setStartDate] = useState(dateNow);
 
-//check updates
-const [check, setCheck] = useState(false);
+  //check updates
+  const [check, setCheck] = useState(false);
 
   //status 
   const [status, setStatus] = useState(['انتظار', 'تم الدفع', 'رفض'])
@@ -163,7 +163,7 @@ const [check, setCheck] = useState(false);
 
 
   async function update(id) {
-console.log(NewData);
+    console.log(NewData);
 
     try {
       let api = `http://127.0.0.1:5000/order/${id}/update`
@@ -173,12 +173,12 @@ console.log(NewData);
       if (data.message === "Done") {
         getDate()
         console.log(data);
-        
+
         setCheck(true)
       }
     } catch (error) {
       console.log(error.response.data.message);
-      
+
       setError(error.response.data.message);
     }
 
@@ -204,7 +204,7 @@ console.log(NewData);
   };
 
 
-  return <div className="History my-5 pb-2">
+  return <div className="History my-5 pb-2 container">
     {/* History Component */}
 
 
@@ -274,7 +274,7 @@ console.log(NewData);
         </div>
       ) : (
 
-        orders.length > 0 ? ([...new Set(orders)].map((el) => (
+        orders.length > 0 ? ([...new Set(orders)].reverse().map((el) => (
 
           <div key={el._id}
             className={` p-2 rounded-3 bg-black opacity-75 my-3`}>
