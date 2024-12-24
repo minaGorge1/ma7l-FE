@@ -1,12 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './Navbar.css';
 import { Link, useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
+import Select from 'react-select';
 
 
 export default function Navbar({ userData, logout }) {
   const navigate = useNavigate()
+
+  //result from search
+  const [result, setResult] = useState([]);
+  const [searchQuery, setSearchQuery] = useState();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,6 +56,26 @@ export default function Navbar({ userData, logout }) {
     };
   }, [navigate]);
 
+  const handleSearchPro = (e) => {
+    setSearchQuery(e.target.value);
+    search(e.target.value)
+  };
+
+  async function search(value) {
+
+    try {
+
+      let api = `http://127.0.0.1:5000/product?search=${value}|name=${value}&isDeleted=false`
+      const { message, ...resultData } = (await axios.get(api)).data;
+      console.log(resultData);
+
+      setResult(resultData.product)
+
+    } catch (error) {
+      /* setError(error.response.data.message); */
+    }
+
+  }
 
   return <>
     <nav className="navbar  nav-color navbar-expand-lg bg-black-opacity">
@@ -107,10 +132,34 @@ export default function Navbar({ userData, logout }) {
                   <Link className="btn btn-light" to="order">Order</Link>
                 </li>
               </ul>
-              <form className="d-flex" role="search">
-                <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                <button className="btn btn-outline-dark" type="submit">Search</button>
-              </form>
+              <div className="position-relative">
+                <span className="d-flex" role="search">
+                  <input
+                    className="form-control me-2"
+                    type="search"
+                    placeholder="Search"
+                    aria-label="Search"
+                    onChange={handleSearchPro}
+                    value={searchQuery}
+                  />
+                  <button className="btn btn-outline-dark" type="submit" onClick={() => search(searchQuery)}>
+                    Search
+                  </button>
+                </span>
+
+                {searchQuery ? (
+                  <ul className="dropdown-menu show" style={{ position: 'absolute', zIndex: 1000, width: '100%' }}>
+                    {result.map((item, index) => (
+                      <Link to={`http://localhost:3000/product/${item._id}`}
+                        key={index}
+                        className="dropdown-item"
+                        onClick={() => { setSearchQuery() }}>
+                        {item.name}
+                      </Link>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
 
             </>
             : null

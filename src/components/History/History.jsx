@@ -163,7 +163,7 @@ function History({ userData }) {
 
 
   async function update(id) {
-    console.log(NewData);
+    /* console.log(NewData); */
 
     try {
       let api = `http://127.0.0.1:5000/order/${id}/update`
@@ -172,13 +172,10 @@ function History({ userData }) {
 
       if (data.message === "Done") {
         getDate()
-        console.log(data);
 
         setCheck(true)
       }
     } catch (error) {
-      console.log(error.response.data.message);
-
       setError(error.response.data.message);
     }
 

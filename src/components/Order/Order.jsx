@@ -26,8 +26,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
   //product
   // what input in search
   const [searchQuery, setSearchQuery] = useState('');
-  // type product
-  const [itemQuery, setItemQuery] = useState('product');
   // products needed
   const [productsDisplay, setProductsDisplay] = useState([])
   //products send
@@ -83,6 +81,14 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
   const [error, setError] = useState(null);
   const [errorMessage, setErrorMessage] = useState({});
 
+  //customer name
+  const options = idsData.customer ? idsData.customer.map((el) => ({
+    value: el._id, // id
+    label: el.name, //  aly bizhr
+    money: el.money,
+    status: el.status
+  })) : [];
+
   useEffect(() => {
     refData()
     getIdsData()
@@ -90,6 +96,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
 
 
   useEffect(() => {
+
     if (products.length > 0) {
       let newFinalPrice = 0;
       let profit = 0;
@@ -104,7 +111,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
         newFinalPrice += price;
         profit += (price - realPrice);
         return acc;
-      }, {});
+      }, { products, orderDone });
 
       setFinalPrice(newFinalPrice);
 
@@ -116,7 +123,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
       }));
     }
     /* setOrder({ ...order, profitMargin: .target?.value || finalPrice }); */
-  }, [products, orderDone]);
+  }, [products, order.paid]);
 
   //REFRESH component
   function refresh() {
@@ -134,8 +141,8 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
     setIsVisible(false)
     setIsVisiblePayment(false)
   }
-  console.log({ order, finalPriceReal, finalPrice, customer });
-
+  /*   console.log({ order, finalPriceReal, finalPrice, customer });
+   */
   // get all id data 
   async function getIdsData() {
 
@@ -166,14 +173,12 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
     }
   }
 
-
   // see in product in cart
   function refData() {
     if (arrayProducts.length > 0) {
       [...new Set(arrayProducts)].forEach((el) => {
         addToProducts(el)
       });
-
     }
     if (customerApp) {
       setCustomer(customerApp)
@@ -187,6 +192,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
         uniqueProducts.forEach(addToProducts)
       }
     } */
+
 
   // handle search
   function handleClick() {
@@ -243,13 +249,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
     setCustomerApp(value)
   };
 
-  //customer name
-  const options = idsData.customer ? idsData.customer.map((el) => ({
-    value: el._id, // id
-    label: el.name, //  aly bizhr
-    money: el.money,
-    status: el.status
-  })) : [];
+
 
 
 
@@ -342,12 +342,21 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
       let api = `http://127.0.0.1:5000/customer/${customer.value}/createTransactions`
       const { data } = await axios.post(api, newTransactionData, { headers })
 
+
       if (data.message === "Done") {
         /* getDate(id, type) */
-        setOpenCreateTrans(false)
-        refData()
-        getIdsData()
-        refresh()
+        /* setOpenCreateTrans(false) */
+        const neWCus = {
+          value: data.customer._id, // id
+          label: data.customer.name, //  aly bizhr
+          money: data.customer.money,
+          status: data.customer.status
+        }
+        await setCustomer(neWCus)
+        await setCustomerApp(neWCus)
+        /* refData()  
+        getIdsData() */
+        /* refresh() */
       }
     } catch (error) {
       setError(error.response.data.message);
@@ -388,9 +397,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
 
                 <button className=" btn btn-primary  "
                   onClick={() => {
-                    if (itemQuery) {
-                      search(searchQuery, itemQuery)
-                    }
+                    search(searchQuery)
                   }}>Search</button>
 
 
@@ -691,7 +698,6 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
                                 return { ...prev, paid: error.details[0].message };
                               }
                               );
-
                             } else {
                               setOrder({ ...order, paid: e.target?.value || finalPrice });
                               setOrderDone(true)
@@ -766,7 +772,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
                               <span> type : </span>
 
 
-                              <span className=" dropdown col-2">
+                              <div className=" dropdown col-2">
                                 <div className="nav-item dropdown btn btn-outline-dark">
                                   <button className="nav-link dropdown-toggle"
                                     role="button"
@@ -797,7 +803,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
 
                                   </ul>
                                 </div>
-                              </span>
+                              </div>
                             </span>
                           </div>
                           {/* money */}
@@ -807,7 +813,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
 
                               <input
                                 className='mt-2'
-                                placeholder="money"
+                                placeholder={order?.paid ? order?.paid - finalPrice : "mony"}
                                 type="number"
                                 /* value={newTransactionData?.amount || 0} */
                                 onChange={(e) => setNewTransactionData({ ...newTransactionData, amount: e.target.value })}
@@ -916,7 +922,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
                               onClick={() => {
                                 createOrder()
                                 setIsVisiblePayment(!isVisiblePayment);
-                              }}>Payment Form</button>
+                              }}>Done...</button>
                             <p className='text-danger'>راجاء مراجعة الاسعار</p>
                           </div>
                         ) : (
@@ -925,7 +931,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
                               onClick={() => {
                                 createOrder()
                                 setIsVisiblePayment(!isVisiblePayment);
-                              }}>Payment Form</button>
+                              }}>Done...</button>
                           </div>
                         )}
                       </div>
@@ -965,6 +971,7 @@ export function Order({ arrayProducts, addProduct, deleteProduct, userData, setC
                 setProductsDisplay([]);
                 setProducts([]);
                 deleteProduct();
+                setFinalPrice(0)
               }}>Delete All</button>
             </Link>
 
