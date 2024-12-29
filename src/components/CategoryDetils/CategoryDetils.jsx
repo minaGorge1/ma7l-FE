@@ -95,7 +95,7 @@ function CategoryDetils() {
       <p>Error: {error}</p>
     ) : null}
 
-   
+
   </div>
 }
 

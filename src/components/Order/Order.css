@@ -15,8 +15,10 @@
 }
 
 .icon-search {
-    min-height: 200px; /* Set minimum height */
-    flex: 1 1 auto; /* Make it flexible */
+    min-height: 200px;
+    /* Set minimum height */
+    flex: 1 1 auto;
+    /* Make it flexible */
     margin-bottom: 10px;
 }
 
@@ -28,12 +30,13 @@
 
 }
 
-.realPrice{
+.realPrice {
     color: #ff6700;
     opacity: 0 !important;
 }
-.realPrice:hover{
-    opacity:  1 !important;
+
+.realPrice:hover {
+    opacity: 1 !important;
 }
 
 .position-payment {
@@ -42,18 +45,32 @@
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 99; 
+    z-index: 99;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.5);
     width: 100% !important;
     height: 100%;
-    
+
 }
 
 .icon-payment {
-    min-height: 200px; /* Set minimum height */
-    flex: 1 1 auto; /* Make it flexible */
+    min-height: 200px;
+    /* Set minimum height */
+    flex: 1 1 auto;
+    /* Make it flexible */
     margin-bottom: 10px;
+}
+
+.background-order {
+    background-image: url('../images/home,create.jpg');
+    background-size: cover;
+    /* or 'contain' */
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    /* Set the height as needed */
+    width: 100%;
+    /* Set the width as needed */
 }

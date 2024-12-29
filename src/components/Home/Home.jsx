@@ -24,19 +24,19 @@ function Home() {
   }
 
   return (
-    <div className="Home mt-3">
+    <div className="Home pt-3 background-home">
 
       <div className='container d-flex col-10 align-items-center justify-content-center'>
 
-        <div className='w-100'>
-          <p className='fs-2 py-1 ps-2'>Youseef Henin products</p>
-          <hr />
+        <div className='w-100 bg-black-p rounded-3'>
+          <p className='fs-2 py-1 ps-2 text-white font-weight-bold'> Youseef Henin products</p>
+          <hr className='text-light' />
           <div className='container align-content-center'>
             <div className='row justify-content-around'>
               {titles?.map((title, index) => (
 
                 <div className="list-unstyled nav-item dropdown  col-5" key={index}>
-                  <Link className=" btn btn-outline-dark p-2 my-2 mx-3 w-100 fs-4 dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <Link className=" btn btn-outline-light p-2 my-2 mx-3 w-100 fs-3 dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     {title.name}
                   </Link>
 

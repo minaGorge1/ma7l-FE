@@ -1,1 +1,13 @@
 .Login {}
+
+.background-login {
+    background-image: url('../images/6.jpeg');
+    background-size: cover;
+    /* or 'contain' */
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 90vh;
+    /* Set the height as needed */
+    width: 100%;
+    /* Set the width as needed */
+}

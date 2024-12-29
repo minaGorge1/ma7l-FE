@@ -403,11 +403,11 @@ function Create() {
 
 
 
-  return <div className="Create my-5 container">
+  return <div className="Create py-5  background-create ">
 
 
-    <div className='container '>
-      <div className='justify-content-center align-item-center bg-light p-3'>
+    <div className='container  my-2'>
+      <div className='justify-content-center align-item-center rounded-2 bg-light p-3'>
         <div className='row'>
 
           {/* select item */}

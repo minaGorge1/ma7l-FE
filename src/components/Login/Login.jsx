@@ -45,32 +45,34 @@ function Login({ saveUserData }) {
     validationSchema: validation,  /* validate */
     onSubmit: handleLogin
   })
-  return <>
-    <div className="w-75 mx-auto py-4">
+  return <div className='background-login'>
+    <div className="w-100 py-4 ">
 
-      <h1> Login now :</h1>
+      <h1 className='text-dark ms-5'> Login now :</h1>
 
       {messageError.length > 0 ? <div className='alert alert-danger'>{messageError}</div> : null}
+      
+      <div className=''>
+        <form className='text-light bg-black opacity-75 p-3 rounded-4 col-5 ms-5' onSubmit={formik.handleSubmit}>
+          <label htmlFor="userName ">User Name :</label>
+          <input onBlur={formik.handleBlur} className='form-control mb-2 w-75 text-dark' onChange={formik.handleChange} value={formik.values.userName} type="text" name='userName' id='userName' />
+          {formik.errors.userName && formik.touched.userName ? <div className="alert alert-danger w-75">{formik.errors.userName}</div> : null}
 
-      <form onSubmit={formik.handleSubmit}>
-        <label htmlFor="userName">User Name :</label>
-        <input onBlur={formik.handleBlur} className='form-control mb-2 ' onChange={formik.handleChange} value={formik.values.userName} type="text" name='userName' id='userName' />
-        {formik.errors.userName && formik.touched.userName ? <div className="alert alert-danger">{formik.errors.userName}</div> : null}
+          <label htmlFor="password text-white">Password :</label>
+          <input onBlur={formik.handleBlur} className='form-control mb-2 w-75' onChange={formik.handleChange} value={formik.values.password} type="password" name='password' id='password' />
+          {formik.errors.password && formik.touched.password ? <div className="alert alert-danger w-75">{formik.errors.password}</div> : null}
 
-        <label htmlFor="password">Password :</label>
-        <input onBlur={formik.handleBlur} className='form-control mb-2 ' onChange={formik.handleChange} value={formik.values.password} type="password" name='password' id='password' />
-        {formik.errors.password && formik.touched.password ? <div className="alert alert-danger">{formik.errors.password}</div> : null}
+          <br />
 
-        <br />
-
-        {islouding ? <button type='button' className='btn btn-dark text-white'><FontAwesomeIcon icon={faSpinner} className="fa-spin-pulse" /></button>
-          : <button disabled={!(formik.isValid && formik.dirty)} type='submit' className='btn btn-dark text-white'>Login</button>}
+          {islouding ? <button type='button' className='btn btn-black text-white'><FontAwesomeIcon icon={faSpinner} className="fa-spin-pulse" /></button>
+            : <button disabled={!(formik.isValid && formik.dirty)} type='submit' className='btn btn-dark text-white'>Login</button>}
 
 
-      </form>
+        </form>
+      </div>
     </div>
 
-  </>
+  </div>
 
 };
 

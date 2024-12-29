@@ -3,3 +3,16 @@
 #webpack-dev-server-client-overlay{
     display: none
 }
+
+
+.background-create {
+    background-image: url('../images/home,create.jpg');
+    background-size: cover;
+    /* or 'contain' */
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    /* Set the height as needed */
+    width: 100%;
+    /* Set the width as needed */
+}

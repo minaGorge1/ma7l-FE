@@ -60,7 +60,7 @@ function Search() {
   }
 
 
-  return (<div className="Search my-5">
+  return (<div className="Search py-5 background-search">
     {/* Search Component */}
 
 
@@ -81,7 +81,7 @@ function Search() {
 
             {/* filter */}
             <div className=" dropdown">
-              <div className="nav-item dropdown btn btn-outline-primary">
+              <div className="nav-item dropdown btn btn-primary">
                 <Link className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Dropdown
                 </Link>

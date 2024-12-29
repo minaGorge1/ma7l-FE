@@ -22,4 +22,21 @@
     background-color: #f0f0f0;
     padding: 20px;
     border: 1px solid #ccc;
-  }
+}
+
+
+.background-history {
+    background-image: url('../images/history.jpg') ;
+    background-size: cover;
+    /* or 'contain' */
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    /* Set the height as needed */
+    width: 100%;
+    /* Set the width as needed */
+}
+
+.bg-orders-his{
+    background-color: rgba(148, 149, 151, 0.909) !important;
+}

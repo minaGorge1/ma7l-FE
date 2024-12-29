@@ -1,3 +1,27 @@
+html,
+body {
+    height: 100%;
+    /* Ensure the body and html take full height */
+    margin: 0;
+    /* Remove default margin */
+}
+
 .titles {
     color: rgb(255, 0, 0);
+}
+
+.bg-black-p {
+    background-color: rgba(0, 0, 0, .4);
+}
+
+.background-home {
+    background-image: url('../images/home,create.jpg') !important;
+    background-size: cover;
+    /* or 'contain' */
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    /* Set the height as needed */
+    width: 100%;
+    /* Set the width as needed */
 }
