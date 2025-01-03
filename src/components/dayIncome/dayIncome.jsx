@@ -257,8 +257,8 @@ function DayIncome({ userData }) {
             <hr />
             {/* daily mony */}
 
-            <div className='justify-content-between container align-item-center row my-2 '>
-              <h2 className='text-center'> daily mony</h2>
+            <div className='justify-content-between container align-item-center row mt-2 mb-5 '>
+              <h2 className='text-center'> daily money</h2>
               <hr />
               <div className='bg-secondary bg-opacity-10'>
                 <ul className='justify-content-between container align-item-center row my-2'>
@@ -266,7 +266,7 @@ function DayIncome({ userData }) {
                   <span className='col-3 fs-4'>{income.date}</span>
                 </ul>
                 <ul className='justify-content-between container align-item-center row my-2'>
-                  <span className="col-3 fs-4">mony :</span>
+                  <span className="col-3 fs-4">money :</span>
                   <span className='col-3 fs-4'>{income.mony}</span>
                 </ul>
                 <ul className='justify-content-between container align-item-center row my-2'>
@@ -364,7 +364,7 @@ function DayIncome({ userData }) {
                 </ul>
 
                 <ul className='justify-content-between container align-item-center row my-2'>
-                  <span className="col-3 fs-4">monyCheck :</span>
+                  <span className="col-3 fs-4">money Check :</span>
                   {/* <span className='col-3 fs-4'>{income.monyCheck}</span> */}
                   <div className="col-3 fs-4">
                     <input
