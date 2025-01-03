@@ -32,6 +32,7 @@
     "axios": "^1.6.5",
     "bootstrap": "^5.3.2",
     "electron-is-dev": "^3.0.1",
+    "express": "^4.21.2",
     "font-awesome": "^4.7.0",
     "formik": "^2.4.5",
     "generate-react-cli": "^8.4.0",
@@ -74,7 +75,8 @@
     "files": [
       "build/**/*",
       "public/electron.js",
-      "node_modules/electron-is-dev/**/*"
+      "node_modules/electron-is-dev/**/*",
+      "package.json"
     ],
     "directories": {
       "output": "dist"

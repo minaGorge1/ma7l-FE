@@ -1,83 +1,67 @@
+import express from 'express';
 import { app, BrowserWindow } from 'electron';
-import { spawn } from 'child_process';
-import fetch from 'node-fetch';
-import path from 'node:path';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-let reactProcess;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let mainWindow;
+let server; // To keep track of the Express server instance
+
+const createServer = () => {
+    const expressApp = express();
+
+    if (app.isPackaged) {
+        // Serve the React production build in production
+        expressApp.use(express.static(path.join(__dirname, '../build')));
+        expressApp.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, '../build/index.html'));
+        });
+    } else {
+        // In development, assume React's dev server is running at localhost:3000
+        console.log('Running in development mode. Ensure React dev server is running at http://localhost:3000');
+    }
+
+    server = expressApp.listen(3000, () => {
+        console.log('Server is running on http://localhost:3000');
+    });
+};
 
 const createWindow = () => {
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
-            contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: true,
         },
     });
 
-    const devServerUrl = 'http://localhost:3000';
-
-    const checkDevServer = async () => {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for 2 seconds
-        try {
-            const response = await fetch(devServerUrl);
-            return response.ok;
-        } catch (error) {
-            console.error('Error checking dev server:', error);
-            return false;
-        }
-    };
-
-    const loadApp = async () => {
-        const isDevServerRunning = await checkDevServer();
-
-        if (isDevServerRunning) {
-            mainWindow.loadURL(devServerUrl);
-        } else {
-            console.error('React server not running. Please start the server.');
-            app.quit();
-        }
-    };
-
-    loadApp();
-
-    // Open DevTools in development mode
-    mainWindow.webContents.openDevTools();
+    if (app.isPackaged) {
+        // Load the production server URL
+        mainWindow.loadURL('http://localhost:3000');
+    } else {
+        // Load the React dev server
+        mainWindow.loadURL('http://localhost:3000');
+    }
 };
 
-const startReactServer = () => {
-    const reactServer = spawn('npm', ['start'], {
-        cwd: path.join(__dirname, 'path-to-your-react-app'), // Change this to your React app's directory
-        shell: true,
-        stdio: 'inherit',
-    });
-
-    reactServer.on('error', (error) => {
-        console.error('Failed to start React server:', error);
-    });
-
-    reactServer.on('close', (code) => {
-        console.log(`React server stopped with code ${code}`);
-    });
-
-    return reactServer;
-};
-
-app.whenReady().then(() => {
-    reactProcess = startReactServer();
+// Start the server and create the window when Electron is ready
+app.on('ready', () => {
+    createServer();
     createWindow();
 });
 
-// Stop React server when Electron exits
+// Stop the server when the app is closed
 app.on('window-all-closed', () => {
+    if (server) {
+        server.close(() => {
+            console.log('Express server stopped.');
+        });
+    }
     if (process.platform !== 'darwin') {
         app.quit();
-    }
-});
-
-app.on('quit', () => {
-    if (reactProcess) {
-        reactProcess.kill();
     }
 });
 
@@ -85,14 +69,4 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
 });

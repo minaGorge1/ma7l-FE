@@ -19,7 +19,76 @@ import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { Navigate } from 'react-router-dom';
 
+/* const fs = window.require("fs")
+const pathModule = window.require("path")
+const { app } = window.require("@electron/remote")
+
+const formatSize = (size) => {
+  if (size === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(size) / Math.log(k));
+  return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}; */
+
 function App() {
+  /* const [path, setPath] = useState(app.getAppPath())
+
+  const files = useMemo(
+    () =>
+      fs
+        .readdirSync(path)
+        .map(file => {
+          const stats = fs.statSync(pathModule.join(path, file))
+          return {
+            name: file,
+            size: stats.isFile() / formatSize(stats.size ?? 0) : null,
+            directory: stats.isDirectory()
+          }
+        }).sort((a, b) => {
+          if (a.directory === b.directory) {
+            return a.name.localCompare(b.name)
+          }
+          return a.directory ? -1 : 1
+        })
+      [path]
+  )
+    const onBack = () => setPath(pathModule.dirname(path))
+    const onOpen = folder => setPath(pathModule.join(path, folder))
+
+    const [searchString , setSearchString] = useState('');
+    const filteredFiles = files.filters(s => s.name.startWith(searchString))
+  */
+  /* const [files, setFiles] = useState([]);
+  const appPath = app.getAppPath();
+
+  useEffect(() => {
+    const readFiles = () => {
+      try {
+        const fileNames = fs.readdirSync(appPath);
+        const fileDetails = fileNames.map(file => {
+          const filePath = pathModule.join(appPath, file);
+          const stats = fs.statSync(filePath);
+          return {
+            name: file,
+            size: stats.isFile() ? formatSize(stats.size) : null,
+            directory: stats.isDirectory(),
+          };
+        }).sort((a, b) => {
+          if (a.directory === b.directory) {
+            return a.name.localeCompare(b.name); // Corrected from localCompare to localeCompare
+          }
+          return a.directory ? -1 : 1; // Directories first
+        });
+
+        setFiles(fileDetails);
+      } catch (error) {
+        console.error('Error reading files:', error);
+      }
+    };
+
+    readFiles();
+  }, [appPath]); */
 
   const [userData, setUserData] = useState(null);
   const [arrayProducts, setArrayProducts] = useState([]);
@@ -66,9 +135,9 @@ function App() {
     }
   }
 
-  async function setCustomerApp(value){
+  async function setCustomerApp(value) {
     setCustomer(value)
-  } 
+  }
 
   return (
     <Router>
@@ -93,7 +162,7 @@ function App() {
           <Route path="update/:type/:id" element={<ProtectedRoute><Update userData={userData} /></ProtectedRoute>} />
           <Route path="search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="create" element={<ProtectedRoute><Create userData={userData} /></ProtectedRoute>} />
-          <Route path="order" element={<ProtectedRoute><Order userData={userData} arrayProducts={arrayProducts} addProduct={addProduct}  deleteProduct={deleteProduct} setCustomerApp={setCustomerApp} customerApp={customerApp} /></ProtectedRoute>} />
+          <Route path="order" element={<ProtectedRoute><Order userData={userData} arrayProducts={arrayProducts} addProduct={addProduct} deleteProduct={deleteProduct} setCustomerApp={setCustomerApp} customerApp={customerApp} /></ProtectedRoute>} />
 
           <Route path="history" element={<ProtectedRoute><History userData={userData} /></ProtectedRoute>} />
           <Route path="dayincome" element={<ProtectedRoute><DayIncome userData={userData} /></ProtectedRoute>} />
