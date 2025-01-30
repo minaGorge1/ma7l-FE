@@ -113,6 +113,8 @@ export const createProduct = joi.object({
 
 function Create() {
 
+  //id sioor
+  const [sioorId, setSioorId] = useState();
   //update data for the selected item
   const [NewData, setNewData] = useState({});
 
@@ -319,31 +321,42 @@ function Create() {
 
 
   async function getIdsData() {
-
     try {
       const promises = ids.map(async (el) => {
         el = el.split("I")[0];
         let api = `http://127.0.0.1:5000/${el}?isDeleted=false`;
-        const response = await axios.get(api);
-        const { message, ...data } = response.data;
 
-        // Process data for each request
-        if (message === "Done") {
-          setFreshData((prevState) => ({
-            ...prevState,
-            [el]: data[el],
-          }));
+        try {
+          const response = await axios.get(api);
+          const { message, ...data } = response.data;
+
+          // Check if message is "Done" and data.title is defined and is an array
+          if (message === "Done" && Array.isArray(data.title)) {
+            const filteredTitles = data.title.filter((item) => item.name === "سيور");
+            console.log(filteredTitles);
+
+            setFreshData((prevState) => ({
+              ...prevState,
+              [el]: data[el],
+            }));
+
+            setSioorId(filteredTitles);
+          } else {
+            console.warn(`Unexpected response structure for ${el}:`, data);
+          }
+        } catch (err) {
+          console.error(`Error fetching data for ${el}:`, err);
+          // Optionally, you can set an error state here if needed
         }
       });
 
       await Promise.all(promises);
 
+      // Only set dataDisplay once after all promises have resolved
       setDataDisplay({ ...freshData });
     } catch (error) {
-      setError(error.response.data.message);
-    }
-    finally {
-      setDataDisplay({ ...freshData });
+      console.error('Error in getIdsData:', error);
+      setError(error.response ? error.response.data.message : 'An error occurred');
     }
   }
 
@@ -368,8 +381,6 @@ function Create() {
       }
     }
   }
-
-
 
   function ValidData() {
 
@@ -472,7 +483,7 @@ function Create() {
                           {ids.includes(element) ? element.split("I")[0]
                             :
 
-                            (formName === "subcategory" && NewData.titleId === "679a57f5a1d2f9afac444669" ? // id siooor
+                            (formName === "subcategory" && NewData.titleId === sioorId[0]._id ? // id siooor
                               (element === "details" ? "inchPrice" : element) :
                               (element === "details" ? element = undefined && delete formName.form.details : element)
                             )
@@ -522,7 +533,7 @@ function Create() {
                             :
                             <span>
 
-                              {formName === "subcategory" && NewData.titleId === "679a57f5a1d2f9afac444669" && element === "details" ? (
+                              {formName === "subcategory" && NewData.titleId === sioorId[0]._id && element === "details" ? (
                                 <input
                                   className='d-inline fs-4'
                                   type="text"
