@@ -147,11 +147,13 @@ function Create() {
     {
       formName: "brand",
       form: {
-        name: ""
+        name: "",
+        description: ""
       },
       api: "http://127.0.0.1:5000/brand/create/",
       validators: joi.object({
         name: joi.string().min(2).max(50).required(),
+        description: joi.string()
       }).required()
     },
     //product
@@ -213,24 +215,28 @@ function Create() {
       formName: "category",
       form: {
         name: "",
-        titleId: ""
+        titleId: "",
+        description: ""
       },
       api: `http://localhost:5000/category/create/t/`,
       needParams: "titleId",
       validators: joi.object({
         titleId: joi.string(),
         name: joi.string().min(2).max(50).required(),
+        description: joi.string()
       }).required()
     },
     //title
     {
       formName: "title",
       form: {
-        name: ""
+        name: "",
+        description: ""
       },
       api: "http://127.0.0.1:5000/title/create/",
       validators: joi.object({
         name: joi.string().min(2).max(50).required(),
+        description: joi.string()
       }).required()
     },
     //customer
@@ -282,6 +288,7 @@ function Create() {
     setError(null)
     setWaitedIds({});
     setSelectedItem({})
+    setNewData({})
   }
   async function getForm(item) {
     if (item) {
@@ -372,6 +379,7 @@ function Create() {
 
 
   async function create(formName) {
+    /* console.log(errorLest); */
 
     let valid = ValidData() // vaild
     if (valid.error == null) {
@@ -399,7 +407,7 @@ function Create() {
           clean()
           getIdsData()
           alert("Created Successfully")
-          
+
         }
       } catch (error) {
 
