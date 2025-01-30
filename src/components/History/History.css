@@ -26,7 +26,7 @@
 
 
 .background-history {
-    background-image: url('../images/history.jpg') ;
+    background-image: url('history.jpg') ;
     background-size: cover;
     /* or 'contain' */
     background-position: center;

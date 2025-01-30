@@ -1,7 +1,7 @@
 .Login {}
 
 .background-login {
-    background-image: url('../images/6.jpeg');
+    background-image: url('6.jpeg');
     background-size: cover;
     /* or 'contain' */
     background-position: center;

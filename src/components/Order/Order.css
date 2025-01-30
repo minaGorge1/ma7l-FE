@@ -64,7 +64,7 @@
 }
 
 .background-order {
-    background-image: url('../images/home,create.jpg');
+    background-image: url('home,create.jpg');
     background-size: cover;
     /* or 'contain' */
     background-position: center;

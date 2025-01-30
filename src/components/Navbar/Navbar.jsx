@@ -13,21 +13,19 @@ export default function Navbar({ userData, logout }) {
   const [result, setResult] = useState([]);
   const [searchQuery, setSearchQuery] = useState();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const expiresAt = userData?.exp;
-      const isTokenExpired = Date.now() / 1000 > expiresAt;
-
-      if (isTokenExpired || userData === null) {
-        navigate('/login', { replace: true });
-        logout()
-      }
-    }, 7200); // Run the code block every 7200 seconds (2 hours)
-
-
-    // Clean up the interval on component unmount
-    return () => clearInterval(interval);
-  }, [userData, navigate]);
+  /*  useEffect(() => {
+     const interval = setInterval(() => {
+       const expiresAt = userData?.exp; // Token expiry timestamp (in seconds)
+       const isTokenExpired = Date.now() / 1000 > expiresAt; // Compare in seconds
+ 
+       if (isTokenExpired || userData === null) {
+         logout();
+         navigate('/login', { replace: true });
+       }
+     }, 60000); // Check every 60 seconds
+ 
+     return () => clearInterval(interval); // Cleanup on unmount
+   }, [userData, navigate, logout]); // Dependencies */
 
   useEffect(() => {
     let timeoutId = null;

@@ -5,6 +5,7 @@ import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 /* import ResizeObserver from 'resize-observer-polyfill'; */
 import joi from 'joi';
+import { functions } from 'lodash';
 
 
 
@@ -103,7 +104,7 @@ export const createProduct = joi.object({
     "finalPrice": "15",
     finalPrice
      "description": "", 
-    "titleId": "657c656b1935a2a5ad47c237",
+    "titleId": "679a57f5a1d2f9afac444669",
     "categoryId": "657c6c98641ad2876dfd0244",
     "subcategoryId": "65eb25b1e750a304c1fbc895",
     "brandId": "657f24fb8765541de7c04ab2"
@@ -272,6 +273,14 @@ function Create() {
   }, [selectedItem]);
 
 
+  function clean() {
+    setErrorLest(" ")
+    setObjectForm(" ")
+    setFormName(" ")
+    setError(null)
+    setWaitedIds({});
+    setSelectedItem({})
+  }
   async function getForm(item) {
     if (item) {
       setWaitedIds({});
@@ -365,6 +374,7 @@ function Create() {
     let valid = ValidData() // vaild
     if (valid.error == null) {
 
+
       try {
 
         const selectedApi = forms.find((form) => form.formName === formName);
@@ -384,8 +394,10 @@ function Create() {
 
         if (data.message === 'Done') {
           // Handle success
+          clean()
           getIdsData()
           alert("Created Successfully")
+          
         }
       } catch (error) {
 
@@ -450,12 +462,10 @@ function Create() {
                           {ids.includes(element) ? element.split("I")[0]
                             :
 
-                            (formName === "subcategory" && NewData.titleId === "657c656b1935a2a5ad47c237" ?
+                            (formName === "subcategory" && NewData.titleId === "679a57f5a1d2f9afac444669" ? // id siooor
                               (element === "details" ? "inchPrice" : element) :
                               (element === "details" ? element = undefined && delete formName.form.details : element)
                             )
-
-
 
 
 
@@ -502,7 +512,7 @@ function Create() {
                             :
                             <span>
 
-                              {formName === "subcategory" && NewData.titleId === "657c656b1935a2a5ad47c237" && element === "details" ? (
+                              {formName === "subcategory" && NewData.titleId === "679a57f5a1d2f9afac444669" && element === "details" ? (
                                 <input
                                   className='d-inline fs-4'
                                   type="text"
@@ -526,7 +536,7 @@ function Create() {
                                           const updatedValue = el.target.value;
                                           setNewData((prevData) => (
                                             formName === "subcategory"
-                                              ? { ...prevData, [element]: updatedValue, details: "" }
+                                              ? { ...prevData, [element]: updatedValue, details: {} }
                                               : { ...prevData, [element]: updatedValue }
                                           ));
                                         }}
@@ -594,7 +604,7 @@ function Create() {
                               )}
 
 
-                              {errorLest.length > 0 ?
+                              {Array.isArray(errorLest) && errorLest.length > 0 ?
                                 errorLest.map((el, i) => el.context.key === element ?
                                   <div key={i} className=' text-danger m-2 alert-danger'>{el.message}</div>
                                   : "") : ""}
