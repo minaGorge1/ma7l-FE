@@ -191,6 +191,7 @@ function Create() {
         titleId: "",
         categoryId: "",
         name: "",
+        description: "",
         details: {
           inchPrice: ""
         }
@@ -201,6 +202,7 @@ function Create() {
         name: joi.string().min(2).max(50).required(),
         titleId: joi.string(),
         categoryId: joi.string(),
+        description: joi.string(),
         details: joi.object({
           inchPrice: joi.string()
         })
