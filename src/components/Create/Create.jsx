@@ -331,16 +331,18 @@ function Create() {
           const { message, ...data } = response.data;
 
           // Check if message is "Done" and data.title is defined and is an array
-          if (message === "Done" && Array.isArray(data.title)) {
-            const filteredTitles = data.title.filter((item) => item.name === "سيور");
-            console.log(filteredTitles);
+          if (message === "Done") {
 
             setFreshData((prevState) => ({
               ...prevState,
               [el]: data[el],
             }));
 
-            setSioorId(filteredTitles);
+            if (data.title && Array.isArray(data.title)) {
+              const filteredTitles = data.title.filter((item) => item.name === "سيور");
+              setSioorId(filteredTitles);
+            }
+
           } else {
             console.warn(`Unexpected response structure for ${el}:`, data);
           }
@@ -361,6 +363,8 @@ function Create() {
   }
 
 
+
+  console.log(freshData);
   // handlee Data Id Display 
   function handleeDataDisplay() {
     for (const keyS of Object.keys(selectedItem)) {

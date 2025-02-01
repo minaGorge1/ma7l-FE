@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import './Navbar.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Select from 'react-select';
 
 
 export default function Navbar({ userData, logout }) {
